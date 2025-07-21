@@ -48,9 +48,17 @@ public class UserService {
 
     public void deactivateUser(Long id) {
     User user = userRepository.findById(id)
-        .orElseThrow(() -> new RuntimeException("Usuario no encontrado"));
+        .orElseThrow(() -> new RuntimeException("User not found"));
 
     user.setActive(false);
     userRepository.save(user);
-}
+    }
+
+    public void activateUser(Long id) {
+        User user = userRepository.findById(id)
+            .orElseThrow(() -> new RuntimeException("User not found"));
+
+        user.setActive(true);
+        userRepository.save(user);
+    }
 }

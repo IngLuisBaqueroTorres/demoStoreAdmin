@@ -24,11 +24,18 @@ public class UserController {
         return userRepository.findAll();
     }
 
-    @PreAuthorize("hasRole('ADMIN')")
+    @PreAuthorize("hasRole('SUPER_ADMIN')")
     @PutMapping("/{id}/deactivate")
     public ResponseEntity<String> deactivateUser(@PathVariable Long id) {
         userService.deactivateUser(id);
-        return ResponseEntity.ok("Usuario desactivado correctamente");
+        return ResponseEntity.ok("User successfully deactivated");
+    }
+
+    @PreAuthorize("hasRole('SUPER_ADMIN')")
+    @PutMapping("/{id}/activate")
+    public ResponseEntity<String> activateUser(@PathVariable Long id) {
+        userService.activateUser(id);
+        return ResponseEntity.ok("User successfully activated");
     }
 
 }

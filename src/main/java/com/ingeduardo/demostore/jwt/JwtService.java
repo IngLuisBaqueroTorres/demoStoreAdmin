@@ -27,10 +27,10 @@ public class JwtService {
     Map<String, Object> claims = new HashMap<>();
 
     List<String> roles = user.getRoles().stream()
-            .map(Role::getName)
+            .map(role -> role.getName().name())
             .collect(Collectors.toList());
 
-    claims.put("roles", roles); // 👈 agrega los roles al token
+    claims.put("roles", roles);
 
     return Jwts.builder()
             .setClaims(claims)
