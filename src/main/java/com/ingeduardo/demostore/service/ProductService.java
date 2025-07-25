@@ -12,4 +12,6 @@ public interface ProductService {
     void deleteProduct(String id, String userRole);
     List<Product> getAllProducts(String userRole);
     Product getProductById(String id, String userRole);
+    List<Product> search(String name, String description, String category);
+
 }

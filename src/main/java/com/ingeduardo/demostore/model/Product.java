@@ -1,12 +1,13 @@
 package com.ingeduardo.demostore.model;
 
-import org.hibernate.annotations.GenericGenerator;
-
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
+import jakarta.persistence.FetchType;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
+import jakarta.persistence.JoinColumn;
+import jakarta.persistence.ManyToOne;
 
 @Entity
 public class Product {
@@ -18,7 +19,10 @@ public class Product {
     private String name;
     private String description;
     private Double price;
-    private String category;
+
+    @ManyToOne(fetch = FetchType.LAZY) 
+    @JoinColumn(name = "category_id") 
+    private Category category;
     private Integer stock;
     private Boolean active = true;
 
@@ -55,11 +59,11 @@ public class Product {
         this.price = price;
     }
 
-    public String getCategory() {
+    public Category getCategory() {
         return category;
     }
 
-    public void setCategory(String category) {
+    public void setCategory(Category category) {
         this.category = category;
     }
 

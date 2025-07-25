@@ -1,5 +1,7 @@
 package com.ingeduardo.demostore.dto;
 
+import com.ingeduardo.demostore.model.Category;
+
 import lombok.Data;
 
 @Data
@@ -9,6 +11,6 @@ public class ProductResponseDto {
     private String description;
     private double price;
     private int stock;
-    private String category;
+    private Category category;
     private boolean active = true;
 }

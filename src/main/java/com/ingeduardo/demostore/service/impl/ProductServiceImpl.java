@@ -65,7 +65,6 @@ public class ProductServiceImpl implements ProductService {
                 .orElseThrow(() -> new ResourceNotFoundException("Product not found with id: " + id));
     }
 
-
     private void authorizeAdmin(String userRole) {
         if (!userRole.equals("ROLE_ADMIN") && !userRole.equals("ROLE_SUPER_ADMIN")) {
             throw new SecurityException("You are not authorized to perform this action.");
@@ -81,6 +80,26 @@ public class ProductServiceImpl implements ProductService {
         product.setStock(dto.getStock());
         product.setActive(dto.getActive());
         return product;
+    }
+
+    @Override
+    public List<Product> search(String name, String description, String category) {
+        if (name != null && description != null && category != null) {
+            return productRepository
+                    .findByNameContainingIgnoreCaseAndDescriptionContainingIgnoreCaseAndCategory_NameIgnoreCase(name,
+                            description, category);
+        } else if (name != null && description != null) {
+            return productRepository.findByNameContainingIgnoreCaseAndDescriptionContainingIgnoreCase(name,
+                    description);
+        } else if (name != null) {
+            return productRepository.findByNameContainingIgnoreCase(name);
+        } else if (description != null) {
+            return productRepository.findByDescriptionContainingIgnoreCase(description);
+        } else if (category != null) {
+            return productRepository.findByCategory_NameIgnoreCase(category);
+        } else {
+            return productRepository.findAll();
+        }
     }
 
     private ProductResponseDto mapToResponseDto(Product product) {

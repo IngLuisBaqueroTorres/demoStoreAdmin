@@ -24,7 +24,8 @@ public class ProductController {
 
     @PostMapping
     @PreAuthorize("hasAnyRole('ADMIN', 'SUPER_ADMIN')")
-    public ResponseEntity<ProductResponseDto> create(@RequestBody ProductRequestDto productDTO, Authentication authentication) {
+    public ResponseEntity<ProductResponseDto> create(@RequestBody ProductRequestDto productDTO,
+            Authentication authentication) {
         String userRole = getUserRole(authentication);
         Product created = productService.createProduct(productDTO, userRole);
         return ResponseEntity.ok(mapToResponseDTO(created));
@@ -51,7 +52,8 @@ public class ProductController {
 
     @PutMapping("/{id}")
     @PreAuthorize("hasAnyRole('ADMIN', 'SUPER_ADMIN')")
-    public ResponseEntity<ProductResponseDto> update(@PathVariable String id, @RequestBody ProductRequestDto productDTO, Authentication authentication) {
+    public ResponseEntity<ProductResponseDto> update(@PathVariable String id, @RequestBody ProductRequestDto productDTO,
+            Authentication authentication) {
         String userRole = getUserRole(authentication);
         Product updated = productService.updateProduct(id, productDTO, userRole);
         return updated != null ? ResponseEntity.ok(mapToResponseDTO(updated)) : ResponseEntity.notFound().build();
@@ -69,6 +71,13 @@ public class ProductController {
         return authentication != null ? authentication.getAuthorities().stream()
                 .map(authority -> authority.getAuthority())
                 .findFirst().orElse("USER") : "USER";
+    }
+
+    @GetMapping("/search")
+    public List<Product> search(@RequestParam(required = false) String name,
+            @RequestParam(required = false) String description,
+            @RequestParam(required = false) String category) {
+        return productService.search(name, description, category);
     }
 
     private ProductResponseDto mapToResponseDTO(Product product) {

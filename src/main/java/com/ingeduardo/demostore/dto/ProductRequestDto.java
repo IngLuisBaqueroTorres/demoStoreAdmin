@@ -1,5 +1,7 @@
 package com.ingeduardo.demostore.dto;
 
+import com.ingeduardo.demostore.model.Category;
+
 import lombok.Data;
 
 @Data
@@ -8,14 +10,14 @@ public class ProductRequestDto {
     private String description;
     private double price;
     private int stock;
-    private String category;
+    private Category category;
     private boolean active = true;
 
     // Getters and setters
-    public String getCategory() {
+    public Category getCategory() {
         return category;
     }
-    public void setCategory(String category) {
+    public void setCategory(Category category) {
         this.category = category;
     }
     public boolean getActive() {
