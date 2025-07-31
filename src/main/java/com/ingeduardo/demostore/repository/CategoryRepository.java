@@ -3,6 +3,7 @@ package com.ingeduardo.demostore.repository;
 import com.ingeduardo.demostore.model.Category;
 
 import java.util.List;
+import java.util.UUID;
 
 import org.springframework.data.jpa.repository.JpaRepository;
 

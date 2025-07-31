@@ -1,29 +1,50 @@
 package com.ingeduardo.demostore.service.impl;
 
+import com.ingeduardo.demostore.controller.CategoryController;
+import com.ingeduardo.demostore.dto.CategoryIdDto;
 import com.ingeduardo.demostore.dto.ProductRequestDto;
 import com.ingeduardo.demostore.dto.ProductResponseDto;
 import com.ingeduardo.demostore.exception.ResourceNotFoundException;
+import com.ingeduardo.demostore.model.Category;
 import com.ingeduardo.demostore.model.Product;
+import com.ingeduardo.demostore.repository.CategoryRepository;
 import com.ingeduardo.demostore.repository.ProductRepository;
 import com.ingeduardo.demostore.service.ProductService;
 import lombok.RequiredArgsConstructor;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
-import java.util.stream.Collectors;
+import java.util.UUID;
 
 @Service
 @RequiredArgsConstructor
 public class ProductServiceImpl implements ProductService {
 
     private final ProductRepository productRepository;
+    private final CategoryRepository categoryRepository;
+    private static final Logger logger = LoggerFactory.getLogger(CategoryController.class);
 
     @Override
-    public Product createProduct(ProductRequestDto dto, String userRole) {
+    public ProductResponseDto createProduct(ProductRequestDto dto, String userRole) {
         authorizeAdmin(userRole);
+        logger.warn("userRole getName: {}", dto.getName());
+        logger.warn("userRole getCategory: {}", dto.getCategory());
+        logger.warn("userRole getActive: {}", dto.getActive());
+        String categoryId = dto.getCategory().toString();
+
+        Category category = categoryRepository.findById(categoryId)
+                .orElseThrow(() -> new RuntimeException("Category not found with ID: " + categoryId));
+
         Product product = mapToEntity(dto);
-        Product saved = productRepository.save(product);
-        return productRepository.save(saved);
+        logger.warn("categorycategorycategory getName: {}", category.getName());
+        product.setCategory(category);
+
+        Product savedProduct = productRepository.save(product);
+
+        return mapToResponseDto(savedProduct);
     }
 
     @Override
@@ -36,7 +57,12 @@ public class ProductServiceImpl implements ProductService {
         product.setName(dto.getName());
         product.setDescription(dto.getDescription());
         product.setPrice(dto.getPrice());
-        product.setCategory(dto.getCategory());
+
+        String categoryId = dto.getCategory().toString();
+        Category category = categoryRepository.findById(categoryId)
+                .orElseThrow(() -> new RuntimeException("Category not found with ID: " + categoryId));
+        product.setCategory(category);
+
         product.setStock(dto.getStock());
         product.setActive(dto.getActive());
 
@@ -65,23 +91,6 @@ public class ProductServiceImpl implements ProductService {
                 .orElseThrow(() -> new ResourceNotFoundException("Product not found with id: " + id));
     }
 
-    private void authorizeAdmin(String userRole) {
-        if (!userRole.equals("ROLE_ADMIN") && !userRole.equals("ROLE_SUPER_ADMIN")) {
-            throw new SecurityException("You are not authorized to perform this action.");
-        }
-    }
-
-    private Product mapToEntity(ProductRequestDto dto) {
-        Product product = new Product();
-        product.setName(dto.getName());
-        product.setDescription(dto.getDescription());
-        product.setPrice(dto.getPrice());
-        product.setCategory(dto.getCategory());
-        product.setStock(dto.getStock());
-        product.setActive(dto.getActive());
-        return product;
-    }
-
     @Override
     public List<Product> search(String name, String description, String category) {
         if (name != null && description != null && category != null) {
@@ -102,15 +111,40 @@ public class ProductServiceImpl implements ProductService {
         }
     }
 
+    private void authorizeAdmin(String userRole) {
+        if (!userRole.equals("ROLE_ADMIN") && !userRole.equals("ROLE_SUPER_ADMIN")) {
+            throw new SecurityException("You are not authorized to perform this action.");
+        }
+    }
+
+    private Product mapToEntity(ProductRequestDto dto) {
+        Product product = new Product();
+        product.setName(dto.getName());
+        product.setDescription(dto.getDescription());
+        product.setPrice(dto.getPrice());
+        product.setStock(dto.getStock());
+        product.setActive(dto.getActive());
+
+        String categoryId = dto.getCategory();
+        Category category = categoryRepository.findById(categoryId)
+                .orElseThrow(() -> new RuntimeException("Category not found with ID: " + categoryId));
+        product.setCategory(category);
+
+        return product;
+    }
+
     private ProductResponseDto mapToResponseDto(Product product) {
         ProductResponseDto dto = new ProductResponseDto();
         dto.setId(product.getId());
         dto.setName(product.getName());
         dto.setDescription(product.getDescription());
         dto.setPrice(product.getPrice());
-        dto.setCategory(product.getCategory());
         dto.setStock(product.getStock());
         dto.setActive(product.getActive());
+
+        CategoryIdDto categoryDto = new CategoryIdDto();
+        categoryDto.setId(product.getCategory().getId());
+        dto.setCategory(product.getCategory());
         return dto;
     }
 }

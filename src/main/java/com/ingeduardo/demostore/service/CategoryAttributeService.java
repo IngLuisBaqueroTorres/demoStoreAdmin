@@ -17,14 +17,14 @@ public class CategoryAttributeService {
     @Autowired
     private CategoryAttributeRepository repository;
 
-    public List<CategoryAttribute> getAttributesByCategory(UUID categoryId) {
+    public List<CategoryAttribute> getAttributesByCategory(String categoryId) {
         return repository.findByCategoryId(categoryId);
     }
 
-    public void assignAttributeToCategory(UUID categoryId, UUID attributeId) {
+    public void assignAttributeToCategory(String categoryId, UUID attributeId) {
         CategoryAttribute ca = new CategoryAttribute();
         ca.setId(UUID.randomUUID());
-        ca.setCategory(new Category(categoryId));
+        ca.setCategory(new Category());
         ca.setAttribute(new ProductAttribute(attributeId));
         repository.save(ca);
     }

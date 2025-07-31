@@ -8,6 +8,6 @@ import org.springframework.data.jpa.repository.JpaRepository;
 import com.ingeduardo.demostore.model.CategoryAttribute;
 
 public interface CategoryAttributeRepository extends JpaRepository<CategoryAttribute, UUID> {
-    List<CategoryAttribute> findByCategoryId(UUID categoryId);
+    List<CategoryAttribute> findByCategoryId(String categoryId);
 }
 

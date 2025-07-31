@@ -1,14 +1,19 @@
 package com.ingeduardo.demostore.controller;
 
 import java.util.List;
+import java.util.UUID;
 import java.util.stream.Collectors;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
+import com.ingeduardo.demostore.dto.CategoryIdDto;
 import com.ingeduardo.demostore.dto.ProductRequestDto;
 import com.ingeduardo.demostore.dto.ProductResponseDto;
+import com.ingeduardo.demostore.model.Category;
 import com.ingeduardo.demostore.model.Product;
 import com.ingeduardo.demostore.service.ProductService;
 
@@ -21,14 +26,17 @@ import lombok.RequiredArgsConstructor;
 public class ProductController {
 
     private final ProductService productService;
+    private static final Logger logger = LoggerFactory.getLogger(CategoryController.class);
 
     @PostMapping
     @PreAuthorize("hasAnyRole('ADMIN', 'SUPER_ADMIN')")
     public ResponseEntity<ProductResponseDto> create(@RequestBody ProductRequestDto productDTO,
             Authentication authentication) {
         String userRole = getUserRole(authentication);
-        Product created = productService.createProduct(productDTO, userRole);
-        return ResponseEntity.ok(mapToResponseDTO(created));
+
+        ProductResponseDto created = productService.createProduct(productDTO, userRole);
+
+        return ResponseEntity.status(201).body(created);
     }
 
     @GetMapping
@@ -86,6 +94,18 @@ public class ProductController {
         dto.setName(product.getName());
         dto.setDescription(product.getDescription());
         dto.setPrice(product.getPrice());
+        dto.setStock(product.getStock());
+        dto.setActive(product.getActive());
+
+        if (product.getCategory() != null) {
+            Category category = new Category();
+            category.setId(product.getCategory().getId());
+            category.setName(product.getCategory().getName());
+            category.setDescription(product.getCategory().getDescription());
+            dto.setCategory(category);
+        }
+
         return dto;
     }
+
 }

@@ -24,7 +24,7 @@ public class CategoryAttributeController {
     private CategoryAttributeService service;
 
     @GetMapping("/{categoryId}")
-    public ResponseEntity<List<CategoryAttribute>> getAttributesByCategory(@PathVariable UUID categoryId) {
+    public ResponseEntity<List<CategoryAttribute>> getAttributesByCategory(@PathVariable String categoryId) {
         return ResponseEntity.ok(service.getAttributesByCategory(categoryId));
     }
 

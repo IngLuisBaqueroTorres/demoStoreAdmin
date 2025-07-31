@@ -2,14 +2,20 @@ package com.ingeduardo.demostore.model;
 
 import java.util.UUID;
 
+
+import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
+import jakarta.persistence.GeneratedValue;
+import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 
 @Entity
 public class Category {
 
     @Id
-    private UUID id;
+    @GeneratedValue(strategy = GenerationType.UUID)
+    @Column(name = "id", columnDefinition = "VARCHAR(36)")
+    private String   id;
     
     private String name;
     private String description;
@@ -17,21 +23,20 @@ public class Category {
     public Category() {
     }
 
-    public Category(UUID id) {
+    public Category(String   id) {
         this.id = id;
     }
 
-    public Category(String id, String name, String description) {
-    this.id = UUID.fromString(id);
+    public Category(String name, String description) {
     this.name = name;
     this.description = description;
-}
+    }
 
-    public UUID getId() {
+    public String   getId() {
         return id;
     }
 
-    public void setId(UUID id) {
+    public void setId(String   id) {
         this.id = id;
     }
 

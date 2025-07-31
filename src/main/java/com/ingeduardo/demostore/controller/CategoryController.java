@@ -8,11 +8,15 @@ import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 @RestController
 @RequestMapping("/api/categories")
 public class CategoryController {
 
     private final CategoryService service;
+     private static final Logger logger = LoggerFactory.getLogger(CategoryController.class);
 
     public CategoryController(CategoryService service) {
         this.service = service;
@@ -23,9 +27,15 @@ public class CategoryController {
         return service.findAll();
     }
 
+    @GetMapping("/{id}")
+    public ResponseEntity<Category> getById(@PathVariable String id) {
+        Category category = service.findById(id);
+        return category != null ? ResponseEntity.ok(category) : ResponseEntity.notFound().build();
+    }
+
     @PostMapping
     public Category create(@RequestBody Category category) {
-
+        logger.info("Category's body: {}", category.getName());
         return service.save(category);
     }
 

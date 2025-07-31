@@ -10,14 +10,14 @@ public class ProductRequestDto {
     private String description;
     private double price;
     private int stock;
-    private Category category;
+    private String  category;
     private boolean active = true;
 
     // Getters and setters
-    public Category getCategory() {
+    public String  getCategory() {
         return category;
     }
-    public void setCategory(Category category) {
+    public void setCategory(String category) {
         this.category = category;
     }
     public boolean getActive() {

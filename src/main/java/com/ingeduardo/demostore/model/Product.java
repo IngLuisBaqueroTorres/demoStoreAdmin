@@ -1,5 +1,6 @@
 package com.ingeduardo.demostore.model;
 
+
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.FetchType;
@@ -12,21 +13,21 @@ import jakarta.persistence.ManyToOne;
 @Entity
 public class Product {
     @Id
+    @Column(columnDefinition = "CHAR(36)")
     @GeneratedValue(strategy = GenerationType.UUID)
-    @Column(columnDefinition = "VARCHAR(36)")
     private String id;
 
     private String name;
     private String description;
     private Double price;
 
-    @ManyToOne(fetch = FetchType.LAZY) 
-    @JoinColumn(name = "category_id") 
+    @ManyToOne(fetch = FetchType.EAGER)
+    @JoinColumn(name = "category_id")
     private Category category;
+    
     private Integer stock;
     private Boolean active = true;
 
-    // Getters and Setters
     public String getId() {
         return id;
     }
@@ -63,8 +64,8 @@ public class Product {
         return category;
     }
 
-    public void setCategory(Category category) {
-        this.category = category;
+    public void setCategory(Category category2) {
+        this.category = category2;
     }
 
     public Integer getStock() {
@@ -82,6 +83,5 @@ public class Product {
     public void setActive(Boolean active) {
         this.active = active;
     }
-    
-}
 
+}

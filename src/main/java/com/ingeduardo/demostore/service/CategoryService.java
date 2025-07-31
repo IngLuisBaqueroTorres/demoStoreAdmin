@@ -4,6 +4,8 @@ import com.ingeduardo.demostore.controller.CategoryController;
 import com.ingeduardo.demostore.model.Category;
 import com.ingeduardo.demostore.repository.CategoryRepository;
 
+import jakarta.transaction.Transactional;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
@@ -32,13 +34,16 @@ public class CategoryService {
             throw new RuntimeException("The category already exists.");
         }
         Category category = new Category(
-                UUID.randomUUID().toString(),
                 newCategory.getName(),
                 newCategory.getDescription());
+        logger.warn("Saving category: {}", category.getName());
+        logger.warn("Saving category: {}", category.getDescription());
         return repository.save(category);
     }
 
+
     public Category update(String id, Category updatedCategory) {
+        UUID uuid = UUID.fromString(id);
         Category existingCategory = repository.findById(id)
                 .orElseThrow(() -> new RuntimeException("Category not found."));
 
@@ -66,6 +71,12 @@ public class CategoryService {
     }
 
     public void delete(String id) {
+        UUID uuid = UUID.fromString(id);
         repository.deleteById(id);
+    }
+
+    public Category findById(String id) {
+        UUID uuid = UUID.fromString(id);
+        return repository.findById(id).orElse(null);
     }
 }

@@ -3,14 +3,14 @@ package com.ingeduardo.demostore.dto;
 import java.util.UUID;
 
 public class AssignAttributeRequest {
-    private UUID categoryId;
+    private String categoryId;
     private UUID attributeId;
 
     // Getters y setters
-    public UUID getCategoryId() {
+    public String getCategoryId() {
         return categoryId;
     }
-    public void setCategoryId(UUID categoryId) {
+    public void setCategoryId(String categoryId) {
         this.categoryId = categoryId;
     }
     public UUID getAttributeId() {
