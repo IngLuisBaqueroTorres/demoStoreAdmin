@@ -13,4 +13,5 @@ public class ProductResponseDto {
     private int stock;
     private Category category;
     private boolean active = true;
+    private String brand;
 }

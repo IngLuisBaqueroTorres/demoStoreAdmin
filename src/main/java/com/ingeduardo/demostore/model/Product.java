@@ -20,6 +20,7 @@ public class Product {
     private String name;
     private String description;
     private Double price;
+     private String brand;
 
     @ManyToOne(fetch = FetchType.EAGER)
     @JoinColumn(name = "category_id")
@@ -82,6 +83,14 @@ public class Product {
 
     public void setActive(Boolean active) {
         this.active = active;
+    }
+
+    public String getBrand() {
+        return brand;
+    }
+
+    public void setBrand(String brand) {
+        this.brand = brand;
     }
 
 }

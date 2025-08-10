@@ -14,10 +14,11 @@ import lombok.RequiredArgsConstructor;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
-import java.util.UUID;
 
 @Service
 @RequiredArgsConstructor
@@ -81,8 +82,8 @@ public class ProductServiceImpl implements ProductService {
     }
 
     @Override
-    public List<Product> getAllProducts(String userRole) {
-        return productRepository.findAll();
+    public Page<Product> getAllProducts(String userRole, Pageable pageable) {
+        return productRepository.findAll(pageable);
     }
 
     @Override
@@ -92,23 +93,8 @@ public class ProductServiceImpl implements ProductService {
     }
 
     @Override
-    public List<Product> search(String name, String description, String category) {
-        if (name != null && description != null && category != null) {
-            return productRepository
-                    .findByNameContainingIgnoreCaseAndDescriptionContainingIgnoreCaseAndCategory_NameIgnoreCase(name,
-                            description, category);
-        } else if (name != null && description != null) {
-            return productRepository.findByNameContainingIgnoreCaseAndDescriptionContainingIgnoreCase(name,
-                    description);
-        } else if (name != null) {
-            return productRepository.findByNameContainingIgnoreCase(name);
-        } else if (description != null) {
-            return productRepository.findByDescriptionContainingIgnoreCase(description);
-        } else if (category != null) {
-            return productRepository.findByCategory_NameIgnoreCase(category);
-        } else {
-            return productRepository.findAll();
-        }
+    public Page<Product> search(String name, String category, String brand, Pageable pageable) {
+        return productRepository.search(name, category, brand, pageable);
     }
 
     private void authorizeAdmin(String userRole) {
