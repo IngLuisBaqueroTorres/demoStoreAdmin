@@ -8,9 +8,10 @@ import jakarta.transaction.Transactional;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
-import java.util.List;
 import java.util.UUID;
 
 @Service
@@ -23,8 +24,8 @@ public class CategoryService {
         this.repository = repository;
     }
 
-    public List<Category> findAll() {
-        return repository.findAll();
+    public Page<Category> findAll(Pageable pageable) {
+        return repository.findAll(pageable);
     }
 
     public Category save(Category newCategory) {
@@ -40,7 +41,6 @@ public class CategoryService {
         logger.warn("Saving category: {}", category.getDescription());
         return repository.save(category);
     }
-
 
     public Category update(String id, Category updatedCategory) {
         UUID uuid = UUID.fromString(id);
@@ -58,16 +58,8 @@ public class CategoryService {
         return repository.save(existingCategory);
     }
 
-    public List<Category> search(String name, String description) {
-        if (name != null && description != null) {
-            return repository.findByNameContainingIgnoreCaseAndDescriptionContainingIgnoreCase(name, description);
-        } else if (name != null) {
-            return repository.findByNameContainingIgnoreCase(name);
-        } else if (description != null) {
-            return repository.findByDescriptionContainingIgnoreCase(description);
-        } else {
-            return repository.findAll();
-        }
+    public Page<Category> search(String name, String description, Pageable pageable) {
+        return repository.search(name, description, pageable);
     }
 
     public void delete(String id) {

@@ -3,28 +3,36 @@ package com.ingeduardo.demostore.controller;
 import com.ingeduardo.demostore.model.Category;
 import com.ingeduardo.demostore.service.CategoryService;
 
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Sort;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
-
-import java.util.List;
-
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 @RestController
 @RequestMapping("/api/categories")
 public class CategoryController {
 
     private final CategoryService service;
-     private static final Logger logger = LoggerFactory.getLogger(CategoryController.class);
 
     public CategoryController(CategoryService service) {
         this.service = service;
     }
 
     @GetMapping
-    public List<Category> getAll() {
-        return service.findAll();
+    public ResponseEntity<Page<Category>> getAll(
+            @RequestParam(required = false) String name,
+            @RequestParam(required = false) String description,
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "10") int size,
+            @RequestParam(defaultValue = "name,asc") String sort) {
+
+        Sort sortOrder = parseSort(sort);
+        PageRequest pageRequest = PageRequest.of(page, size, sortOrder);
+
+        Page<Category> categoriesPage = service.search(name, description, pageRequest);
+
+        return ResponseEntity.ok(categoriesPage);
     }
 
     @GetMapping("/{id}")
@@ -35,7 +43,6 @@ public class CategoryController {
 
     @PostMapping
     public Category create(@RequestBody Category category) {
-        logger.info("Category's body: {}", category.getName());
         return service.save(category);
     }
 
@@ -54,9 +61,33 @@ public class CategoryController {
     }
 
     @GetMapping("/search")
-    public List<Category> search(@RequestParam(required = false) String name,
-            @RequestParam(required = false) String description) {
-        return service.search(name, description);
+    public ResponseEntity<Page<Category>> search(
+            @RequestParam(required = false) String name,
+            @RequestParam(required = false) String description,
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "10") int size,
+            @RequestParam(defaultValue = "name,asc") String sort) {
+
+        Sort sortOrder = parseSort(sort);
+
+        PageRequest pageRequest = PageRequest.of(page, size, sortOrder);
+
+        Page<Category> result = service.search(name, description, pageRequest);
+
+        return ResponseEntity.ok(result);
     }
 
+    private Sort parseSort(String sort) {
+        String[] parts = sort.split(",");
+        String property = parts[0];
+        Sort.Direction direction = Sort.Direction.ASC;
+        if (parts.length > 1) {
+            try {
+                direction = Sort.Direction.fromString(parts[1]);
+            } catch (IllegalArgumentException e) {
+                direction = Sort.Direction.ASC;
+            }
+        }
+        return Sort.by(direction, property);
+    }
 }
