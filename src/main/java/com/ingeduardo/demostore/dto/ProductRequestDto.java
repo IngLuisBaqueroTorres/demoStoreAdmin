@@ -9,9 +9,12 @@ public class ProductRequestDto {
     private String name;
     private String description;
     private double price;
+    private double discount = 0.0;
+    private String brand;
     private int stock;
     private String  category;
     private boolean active = true;
+    private boolean soldOut = false;
 
     // Getters and setters
     public String  getCategory() {

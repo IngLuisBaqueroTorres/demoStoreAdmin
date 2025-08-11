@@ -30,17 +30,15 @@ public class ProductServiceImpl implements ProductService {
 
     @Override
     public ProductResponseDto createProduct(ProductRequestDto dto, String userRole) {
+
         authorizeAdmin(userRole);
-        logger.warn("userRole getName: {}", dto.getName());
-        logger.warn("userRole getCategory: {}", dto.getCategory());
-        logger.warn("userRole getActive: {}", dto.getActive());
+
         String categoryId = dto.getCategory().toString();
 
         Category category = categoryRepository.findById(categoryId)
                 .orElseThrow(() -> new RuntimeException("Category not found with ID: " + categoryId));
 
         Product product = mapToEntity(dto);
-        logger.warn("categorycategorycategory getName: {}", category.getName());
         product.setCategory(category);
 
         Product savedProduct = productRepository.save(product);
@@ -55,9 +53,16 @@ public class ProductServiceImpl implements ProductService {
         Product product = productRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Product not found with id: " + id));
 
+        Double discount = dto.getDiscount() != 0.0 ? dto.getDiscount() : product.getDiscount();
+        Double price = dto.getPrice() != 0.0 ? dto.getPrice() : product.getPrice();
+        String description = dto.getDescription() != null ? dto.getDescription() : product.getDescription();
+
         product.setName(dto.getName());
-        product.setDescription(dto.getDescription());
-        product.setPrice(dto.getPrice());
+        product.setDescription(description);
+        product.setPrice(price);
+        product.setDiscount(discount);
+        product.setBrand(dto.getBrand() != null ? dto.getBrand() : product.getBrand());
+        product.setSoldOut(dto.isSoldOut());
 
         String categoryId = dto.getCategory().toString();
         Category category = categoryRepository.findById(categoryId)
@@ -105,11 +110,21 @@ public class ProductServiceImpl implements ProductService {
 
     private Product mapToEntity(ProductRequestDto dto) {
         Product product = new Product();
+
+        Double discount = dto.getDiscount() != 0.0 ? dto.getDiscount() : 0.0;
+        Double price = dto.getPrice() != 0.0 ? dto.getPrice() : 0.0;
+        Integer stock = dto.getStock() != 0 ? dto.getStock() : 0;
+
         product.setName(dto.getName());
         product.setDescription(dto.getDescription());
         product.setPrice(dto.getPrice());
         product.setStock(dto.getStock());
+        product.setDiscount(discount);
+        product.setBrand(dto.getBrand());
+        product.setPrice(price);
+        product.setStock(stock);
         product.setActive(dto.getActive());
+        product.setSoldOut(dto.isSoldOut());
 
         String categoryId = dto.getCategory();
         Category category = categoryRepository.findById(categoryId)
@@ -121,12 +136,21 @@ public class ProductServiceImpl implements ProductService {
 
     private ProductResponseDto mapToResponseDto(Product product) {
         ProductResponseDto dto = new ProductResponseDto();
+
+        Double discount = product.getDiscount() != null ? product.getDiscount() : 0.0;
+        Double price = product.getPrice() != null ? product.getPrice() : 0.0;
+        logger.info("Fetched products: {}", product.getDiscount());        
+
         dto.setId(product.getId());
         dto.setName(product.getName());
         dto.setDescription(product.getDescription());
-        dto.setPrice(product.getPrice());
+        dto.setPrice(price);
         dto.setStock(product.getStock());
+        dto.setDiscount(discount);
+        dto.setBrand(product.getBrand());
         dto.setActive(product.getActive());
+        dto.setSoldOut(product.getSoldOut());
+        dto.setFinalPrice(product.getFinalPrice());
 
         CategoryIdDto categoryDto = new CategoryIdDto();
         categoryDto.setId(product.getCategory().getId());

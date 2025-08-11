@@ -51,7 +51,6 @@ public class ProductController {
         Page<Product> productsPage = productService.getAllProducts(userRole, PageRequest.of(page, size));
 
         Page<ProductResponseDto> dtoPage = productsPage.map(this::mapToResponseDTO);
-
         return ResponseEntity.ok(dtoPage);
     }
 
@@ -115,12 +114,17 @@ public class ProductController {
 
     private ProductResponseDto mapToResponseDTO(Product product) {
         ProductResponseDto dto = new ProductResponseDto();
+        Double discount = product.getDiscount() != null ? product.getDiscount() : 0.0;
+        Double price = product.getPrice() != null ? product.getPrice() : 0.0;
+
         dto.setId(product.getId());
         dto.setName(product.getName());
         dto.setDescription(product.getDescription());
-        dto.setPrice(product.getPrice());
+        dto.setPrice(price);
         dto.setStock(product.getStock());
         dto.setActive(product.getActive());
+        dto.setDiscount(discount);
+        dto.setFinalPrice(product.getFinalPrice());
 
         if (product.getCategory() != null) {
             Category category = new Category();

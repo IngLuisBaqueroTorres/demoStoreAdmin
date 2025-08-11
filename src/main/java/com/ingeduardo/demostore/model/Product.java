@@ -20,7 +20,8 @@ public class Product {
     private String name;
     private String description;
     private Double price;
-     private String brand;
+    private Double discount = 0.0;
+    private String brand;
 
     @ManyToOne(fetch = FetchType.EAGER)
     @JoinColumn(name = "category_id")
@@ -28,6 +29,7 @@ public class Product {
     
     private Integer stock;
     private Boolean active = true;
+    private Boolean soldOut = false;
 
     public String getId() {
         return id;
@@ -93,4 +95,24 @@ public class Product {
         this.brand = brand;
     }
 
+    public Double getDiscount() {
+        return discount;
+    }
+    public void setDiscount(Double discount) {
+        this.discount = discount;
+    }
+    public Boolean getSoldOut() {
+        return soldOut;
+    }
+    public void setSoldOut(Boolean soldOut) {
+        this.soldOut = soldOut;
+    }
+
+      public double getFinalPrice() {
+        if (discount <= 0 || discount >= 100) {
+            return price;
+        }
+        double descuentoAplicado = price * (discount / 100.0);
+        return price - descuentoAplicado;
+    }
 }

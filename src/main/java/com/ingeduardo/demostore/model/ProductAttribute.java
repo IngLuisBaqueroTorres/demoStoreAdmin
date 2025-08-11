@@ -7,21 +7,30 @@ import java.util.UUID;
 public class ProductAttribute {
 
     @Id
+    @Column(length = 36)
     private String id;
 
+    @Column(nullable = false, unique = true)
     private String name;
 
+    @Column(length = 500)
     private String description;
 
-    public ProductAttribute(UUID id) {
-        this.id = id.toString();
+    @Column(nullable = false)
+    private String type; 
+
+    public ProductAttribute() {
+        
     }
 
-    public ProductAttribute(String name, String description) {
+    public ProductAttribute(String name, String description, String type) {
         this.id = UUID.randomUUID().toString();
         this.name = name;
         this.description = description;
+        this.type = type;
     }
+
+    // Getters y setters
 
     public String getId() {
         return id;
@@ -45,5 +54,13 @@ public class ProductAttribute {
 
     public void setDescription(String description) {
         this.description = description;
+    }
+
+    public String getType() {
+        return type;
+    }
+
+    public void setType(String type) {
+        this.type = type;
     }
 }

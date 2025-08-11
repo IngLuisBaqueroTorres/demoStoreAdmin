@@ -5,33 +5,56 @@ import java.util.UUID;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
-import com.ingeduardo.demostore.dto.AssignAttributeRequest;
 import com.ingeduardo.demostore.model.CategoryAttribute;
 import com.ingeduardo.demostore.service.CategoryAttributeService;
 
 @RestController
-@RequestMapping("/api/category-attributes")
+@RequestMapping("/api/categories/{categoryId}/attributes")
 public class CategoryAttributeController {
 
     @Autowired
-    private CategoryAttributeService service;
+    private CategoryAttributeService categoryAttributeService;
 
-    @GetMapping("/{categoryId}")
+    @GetMapping
     public ResponseEntity<List<CategoryAttribute>> getAttributesByCategory(@PathVariable String categoryId) {
-        return ResponseEntity.ok(service.getAttributesByCategory(categoryId));
+        List<CategoryAttribute> attributes = categoryAttributeService.getAttributesByCategory(categoryId);
+        return ResponseEntity.ok(attributes);
     }
 
     @PostMapping
-    public ResponseEntity<Void> assignAttribute(@RequestBody AssignAttributeRequest request) {
-        service.assignAttributeToCategory(request.getCategoryId(), request.getAttributeId());
-        return ResponseEntity.ok().build();
+    public ResponseEntity<String> assignAttributeToCategory(
+            @PathVariable String categoryId,
+            @RequestBody AttributeAssignmentRequest request) {
+        try {
+            categoryAttributeService.assignAttributeToCategory(categoryId, request.getAttributeId());
+            return ResponseEntity.ok("Attribute assigned to category successfully");
+        } catch (RuntimeException ex) {
+            return ResponseEntity.badRequest().body(ex.getMessage());
+        }
+    }
+
+    @DeleteMapping("/relation/{relationId}")
+    public ResponseEntity<String> deleteCategoryAttribute(@PathVariable UUID relationId) {
+        try {
+            categoryAttributeService.deleteCategoryAttribute(relationId);
+            return ResponseEntity.ok("Category attribute assignment deleted successfully");
+        } catch (RuntimeException ex) {
+            return ResponseEntity.badRequest().body(ex.getMessage());
+        }
+    }
+
+    // Clase interna para recibir el body
+    public static class AttributeAssignmentRequest {
+        private UUID attributeId;
+
+        public UUID getAttributeId() {
+            return attributeId;
+        }
+
+        public void setAttributeId(UUID attributeId) {
+            this.attributeId = attributeId;
+        }
     }
 }
-

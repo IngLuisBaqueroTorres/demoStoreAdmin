@@ -9,7 +9,7 @@ spring:
 
   jpa:
     hibernate:
-      ddl-auto: update # or create, depending on your needs
+      ddl-auto: update # or create or update depending on your needs
     show-sql: true
     properties:
       hibernate:
