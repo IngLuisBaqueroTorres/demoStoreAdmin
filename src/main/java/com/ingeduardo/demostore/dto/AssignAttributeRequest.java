@@ -1,10 +1,9 @@
 package com.ingeduardo.demostore.dto;
 
-import java.util.UUID;
 
 public class AssignAttributeRequest {
     private String categoryId;
-    private UUID attributeId;
+    private String attributeId;
 
     // Getters y setters
     public String getCategoryId() {
@@ -13,10 +12,10 @@ public class AssignAttributeRequest {
     public void setCategoryId(String categoryId) {
         this.categoryId = categoryId;
     }
-    public UUID getAttributeId() {
+    public String getAttributeId() {
         return attributeId;
     }
-    public void setAttributeId(UUID attributeId) {
+    public void setAttributeId(String attributeId) {
         this.attributeId = attributeId;
     }
 }

@@ -1,47 +1,40 @@
 package com.ingeduardo.demostore.controller;
 
-import java.util.List;
-import java.util.UUID;
 
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
-import com.ingeduardo.demostore.model.ProductAttributeValue;
+import com.ingeduardo.demostore.dto.ProductAttributeValueResponseDto;
+import com.ingeduardo.demostore.dto.ProductAttributeValueRequestDto;
 import com.ingeduardo.demostore.service.ProductAttributeValueService;
 
 @RestController
-@RequestMapping("/api/products/{productId}/attributes")
+@RequestMapping("/api/product-attribute-values")
 public class ProductAttributeValueController {
 
-    @Autowired
-    private ProductAttributeValueService attributeValueService;
+    private final ProductAttributeValueService service;
 
-    @GetMapping
-    public ResponseEntity<List<ProductAttributeValue>> getAttributesByProduct(@PathVariable String productId) {
-        List<ProductAttributeValue> attributes = attributeValueService.getAttributesByProduct(productId);
-        return ResponseEntity.ok(attributes);
+    public ProductAttributeValueController(ProductAttributeValueService service) {
+        this.service = service;
     }
 
-    @PostMapping("/{attributeId}")
-    public ResponseEntity<ProductAttributeValue> addOrUpdateAttributeValue(@PathVariable String productId,
-                                                                           @PathVariable UUID attributeId,
-                                                                           @RequestBody String value) {
-        try {
-            ProductAttributeValue pav = attributeValueService.addOrUpdateAttributeValue(productId, attributeId, value);
-            return ResponseEntity.ok(pav);
-        } catch (RuntimeException ex) {
-            return ResponseEntity.badRequest().build();
-        }
+    @PostMapping
+    public ProductAttributeValueResponseDto create(@RequestBody  ProductAttributeValueRequestDto request) {
+        return service.create(request);
     }
 
-    @DeleteMapping("/{attributeValueId}")
-    public ResponseEntity<String> deleteAttributeValue(@PathVariable String attributeValueId) {
-        try {
-            attributeValueService.deleteAttributeValue(attributeValueId);
-            return ResponseEntity.ok("Attribute value deleted successfully");
-        } catch (RuntimeException ex) {
-            return ResponseEntity.badRequest().body("Failed to delete attribute value");
-        }
+    @PutMapping("/{id}")
+    public ProductAttributeValueResponseDto update(@PathVariable String id, @RequestBody ProductAttributeValueRequestDto request) {
+        return service.update(id, request);
     }
+
+    @DeleteMapping("/{id}")
+    public void delete(@PathVariable String id) {
+        service.delete(id);
+    }
+
+    @GetMapping("/product/{productId}")
+    public java.util.List<ProductAttributeValueResponseDto> findByProductId(@PathVariable String productId) {
+        return service.findByProductId(productId);
+    }
+    
 }

@@ -1,39 +1,38 @@
 package com.ingeduardo.demostore.model;
 
+import org.hibernate.annotations.GenericGenerator;
+
 import jakarta.persistence.*;
-import java.util.UUID;
+import lombok.*;
 
 @Entity
+@Table(name = "product_attribute_values")
+@Getter
+@Setter
+@NoArgsConstructor
+@AllArgsConstructor
+@Builder
 public class ProductAttributeValue {
 
     @Id
-    @Column(length = 36)
+    @GeneratedValue(generator = "uuid2")
+    @GenericGenerator(name = "uuid2", strategy = "org.hibernate.id.UUIDGenerator")
+    @Column(name = "id", updatable = false, nullable = false)
     private String id;
 
-    @ManyToOne(optional = false, fetch = FetchType.LAZY)
-    @JoinColumn(name = "product_id")
-    private Product product;
+    // Relación con Product
+    @Column(name = "product_id", nullable = false)
+    private String productId;
 
-    @ManyToOne(optional = false, fetch = FetchType.LAZY)
-    @JoinColumn(name = "product_attribute_id")
-    private ProductAttribute attribute;
+    // Relación con ProductAttribute
+    @Column(name = "attribute_id", nullable = false)
+    private String attributeId;
 
-    @Column(nullable = false, length = 255)
+    // Valor del atributo (ejemplo: "Rojo", "XL", "128GB")
+    @Column(name = "value", nullable = false)
     private String value;
 
-    public ProductAttributeValue() {
-        this.id = UUID.randomUUID().toString();
-    }
-
-    public ProductAttributeValue(Product product, ProductAttribute attribute, String value) {
-        this.id = UUID.randomUUID().toString();
-        this.product = product;
-        this.attribute = attribute;
-        this.value = value;
-    }
-
-    // Getters y setters
-
+    // ===== Getters & Setters =====
     public String getId() {
         return id;
     }
@@ -42,20 +41,20 @@ public class ProductAttributeValue {
         this.id = id;
     }
 
-    public Product getProduct() {
-        return product;
+    public String getProductId() {
+        return productId;
     }
 
-    public void setProduct(Product product) {
-        this.product = product;
+    public void setProductId(String productId) {
+        this.productId = productId;
     }
 
-    public ProductAttribute getAttribute() {
-        return attribute;
+    public String getAttributeId() {
+        return attributeId;
     }
 
-    public void setAttribute(ProductAttribute attribute) {
-        this.attribute = attribute;
+    public void setAttributeId(String attributeId) {
+        this.attributeId = attributeId;
     }
 
     public String getValue() {

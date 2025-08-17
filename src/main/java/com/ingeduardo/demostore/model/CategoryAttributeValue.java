@@ -5,30 +5,24 @@ import lombok.*;
 import java.util.UUID;
 
 @Entity
-@Table(name = "category_attributes")
+@Table(name = "category_attribute_values")
 @Getter
 @Setter
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
-public class CategoryAttribute {
+public class CategoryAttributeValue {
 
     @Id
     @Column(name = "id", length = 36)
     private String id;
 
     @Column(nullable = false)
-    private String name;
-
-    @Column
-    private String type; 
-
-    @Column
-    private String description;
+    private String value;
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "category_id", nullable = false)
-    private Category category;
+    @JoinColumn(name = "attribute_id", nullable = false)
+    private CategoryAttribute attribute;
 
     @PrePersist
     public void ensureId() {

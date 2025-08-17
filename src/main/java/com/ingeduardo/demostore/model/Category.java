@@ -1,42 +1,44 @@
 package com.ingeduardo.demostore.model;
 
+import jakarta.persistence.*;
 import java.util.UUID;
-
-
-import jakarta.persistence.Column;
-import jakarta.persistence.Entity;
-import jakarta.persistence.GeneratedValue;
-import jakarta.persistence.GenerationType;
-import jakarta.persistence.Id;
 
 @Entity
 public class Category {
 
     @Id
-    @GeneratedValue(strategy = GenerationType.UUID)
     @Column(name = "id", columnDefinition = "VARCHAR(36)")
-    private String   id;
-    
+    private String id;
+
     private String name;
     private String description;
 
     public Category() {
     }
 
-    public Category(String   id) {
+    public Category(String id) {
         this.id = id;
     }
 
     public Category(String name, String description) {
-    this.name = name;
-    this.description = description;
+        this.name = name;
+        this.description = description;
     }
 
-    public String   getId() {
+    // --- Auto generar el id si no existe ---
+    @PrePersist
+    public void ensureId() {
+        if (this.id == null) {
+            this.id = UUID.randomUUID().toString();
+        }
+    }
+
+    // Getters & Setters
+    public String getId() {
         return id;
     }
 
-    public void setId(String   id) {
+    public void setId(String id) {
         this.id = id;
     }
 
