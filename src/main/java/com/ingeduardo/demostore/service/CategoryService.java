@@ -1,60 +1,43 @@
 package com.ingeduardo.demostore.service;
 
-import com.ingeduardo.demostore.controller.CategoryController;
+import com.ingeduardo.demostore.dto.CategoryRequestDto;
+import com.ingeduardo.demostore.exception.ResourceNotFoundException;
+import com.ingeduardo.demostore.mapper.CategoryMapper;
 import com.ingeduardo.demostore.model.Category;
 import com.ingeduardo.demostore.repository.CategoryRepository;
-
-import jakarta.transaction.Transactional;
-
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
-import java.util.UUID;
-
 @Service
+@RequiredArgsConstructor
 public class CategoryService {
 
     private final CategoryRepository repository;
-    private static final Logger logger = LoggerFactory.getLogger(CategoryController.class);
-
-    public CategoryService(CategoryRepository repository) {
-        this.repository = repository;
-    }
 
     public Page<Category> findAll(Pageable pageable) {
         return repository.findAll(pageable);
     }
 
-    public Category save(Category newCategory) {
-        logger.warn("Creating category: {}", newCategory.getName());
-
-        if (repository.existsByName(newCategory.getName())) {
-            throw new RuntimeException("The category already exists.");
+    public Category save(CategoryRequestDto categoryDto) {
+        if (repository.existsByName(categoryDto.getName())) {
+            throw new IllegalStateException("A category with this name already exists.");
         }
-        Category category = new Category(
-                newCategory.getName(),
-                newCategory.getDescription());
-        logger.warn("Saving category: {}", category.getName());
-        logger.warn("Saving category: {}", category.getDescription());
+        Category category = CategoryMapper.toEntity(categoryDto);
         return repository.save(category);
     }
 
-    public Category update(String id, Category updatedCategory) {
-        UUID uuid = UUID.fromString(id);
+    public Category update(String id, CategoryRequestDto categoryDto) {
         Category existingCategory = repository.findById(id)
-                .orElseThrow(() -> new RuntimeException("Category not found."));
+                .orElseThrow(() -> new ResourceNotFoundException("Category not found with id: " + id));
 
-        if (!existingCategory.getName().equals(updatedCategory.getName())
-                && repository.existsByName(updatedCategory.getName())) {
-            throw new RuntimeException("Another category with this name already exists.");
+        if (!existingCategory.getName().equals(categoryDto.getName())
+                && repository.existsByName(categoryDto.getName())) {
+            throw new IllegalStateException("Another category with this name already exists.");
         }
 
-        existingCategory.setName(updatedCategory.getName());
-        existingCategory.setDescription(updatedCategory.getDescription());
-
+        CategoryMapper.updateEntityFromDto(categoryDto, existingCategory);
         return repository.save(existingCategory);
     }
 
@@ -63,12 +46,14 @@ public class CategoryService {
     }
 
     public void delete(String id) {
-        UUID uuid = UUID.fromString(id);
+        if (!repository.existsById(id)) {
+            throw new ResourceNotFoundException("Category not found with id: " + id);
+        }
         repository.deleteById(id);
     }
 
     public Category findById(String id) {
-        UUID uuid = UUID.fromString(id);
-        return repository.findById(id).orElse(null);
+        return repository.findById(id)
+                .orElseThrow(() -> new ResourceNotFoundException("Category not found with id: " + id));
     }
 }
