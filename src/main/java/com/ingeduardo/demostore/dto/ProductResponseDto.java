@@ -25,5 +25,6 @@ public class ProductResponseDto {
     private boolean active;
     private boolean soldOut;
     private String brand;
+    private List<String> images;
     private List<ProductAttributeResponseDto> attributes;
 }

@@ -1,6 +1,10 @@
 package com.ingeduardo.demostore.model;
 
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+
 import jakarta.persistence.*;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.UUID;
 
 @Entity
@@ -12,6 +16,15 @@ public class Category {
 
     private String name;
     private String description;
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "parent_id")
+    @JsonIgnoreProperties("children")
+    private Category parent;
+
+    @OneToMany(mappedBy = "parent", cascade = CascadeType.ALL, orphanRemoval = true)
+    @JsonIgnoreProperties("parent")
+    private List<Category> children = new ArrayList<>();
 
     public Category() {
     }
@@ -56,5 +69,21 @@ public class Category {
 
     public void setDescription(String description) {
         this.description = description;
+    }
+
+    public Category getParent() {
+        return parent;
+    }
+
+    public void setParent(Category parent) {
+        this.parent = parent;
+    }
+
+    public List<Category> getChildren() {
+        return children;
+    }
+
+    public void setChildren(List<Category> children) {
+        this.children = children;
     }
 }

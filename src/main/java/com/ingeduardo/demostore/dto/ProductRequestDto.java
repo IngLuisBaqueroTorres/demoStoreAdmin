@@ -16,6 +16,7 @@ public class ProductRequestDto {
     private String  category;
     private boolean active = true;
     private boolean soldOut = false;
+    private List<String> images;
     private List<ProductAttributeRequestDto> attributes;
 
     // Getters and setters

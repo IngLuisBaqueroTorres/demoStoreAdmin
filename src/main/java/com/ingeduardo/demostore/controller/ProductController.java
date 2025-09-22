@@ -27,7 +27,7 @@ import lombok.RequiredArgsConstructor;
 public class ProductController {
 
     private final ProductService productService;
-    private static final Logger logger = LoggerFactory.getLogger(CategoryController.class);
+    private static final Logger logger = LoggerFactory.getLogger(ProductController.class);
 
     @PostMapping
     @PreAuthorize("hasAnyRole('ADMIN', 'SUPER_ADMIN')")
@@ -125,6 +125,7 @@ public class ProductController {
         dto.setActive(product.getActive());
         dto.setDiscount(discount);
         dto.setFinalPrice(product.getFinalPrice());
+        dto.setImages(product.getImages());
 
         if (product.getCategory() != null) {
             Category category = new Category();

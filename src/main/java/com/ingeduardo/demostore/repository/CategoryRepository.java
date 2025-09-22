@@ -8,9 +8,13 @@ import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
+import java.util.List;
+
 @Repository
 public interface CategoryRepository extends JpaRepository<Category, String> {
     boolean existsByName(String name);
+
+    List<Category> findByParentIsNull();
 
     Page<Category> findByNameContainingIgnoreCase(String name, Pageable pageable);
 
