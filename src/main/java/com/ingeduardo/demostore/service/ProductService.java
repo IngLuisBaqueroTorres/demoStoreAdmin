@@ -1,6 +1,5 @@
 package com.ingeduardo.demostore.service;
 
-import java.util.List;
 
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -14,7 +13,7 @@ public interface ProductService {
     Product updateProduct(String id, ProductRequestDto productRequest, String userRole);
     void deleteProduct(String id, String userRole);
     Page<Product> getAllProducts(String userRole, Pageable pageable);
-    Product getProductById(String id, String userRole);
+    ProductResponseDto getProductById(String id, String userRole);
     Page<Product> search(String name, String category, String brand, Pageable pageable);
 
 }

@@ -1,6 +1,7 @@
 package com.ingeduardo.demostore.repository;
 
 import java.util.List;
+import java.util.Optional;
 
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -13,27 +14,30 @@ import com.ingeduardo.demostore.model.Product;
 
 @Repository
 public interface ProductRepository extends JpaRepository<Product, String> {
-    List<Product> findByActiveTrue();
+        List<Product> findByActiveTrue();
 
-    @Query("SELECT p FROM Product p WHERE LOWER(p.name) LIKE LOWER(CONCAT('%', :term, '%'))")
-    List<Product> findByNameContainingIgnoreCase(String name);
+        @Query("SELECT p FROM Product p WHERE LOWER(p.name) LIKE LOWER(CONCAT('%', :term, '%'))")
+        List<Product> findByNameContainingIgnoreCase(String name);
 
-     @Query("SELECT p FROM Product p WHERE LOWER(p.description) LIKE LOWER(CONCAT('%', :term, '%'))")
-    List<Product> findByDescriptionContainingIgnoreCase(String description);
+        @Query("SELECT p FROM Product p WHERE LOWER(p.description) LIKE LOWER(CONCAT('%', :term, '%'))")
+        List<Product> findByDescriptionContainingIgnoreCase(String description);
 
-    List<Product> findByCategory_NameIgnoreCase(String category);
+        List<Product> findByCategory_NameIgnoreCase(String category);
 
-    List<Product> findByNameContainingIgnoreCaseAndDescriptionContainingIgnoreCase(String name, String description);
+        List<Product> findByNameContainingIgnoreCaseAndDescriptionContainingIgnoreCase(String name, String description);
 
-    List<Product> findByNameContainingIgnoreCaseAndDescriptionContainingIgnoreCaseAndCategory_NameIgnoreCase(
-            String name, String description, String category);
-  
-    @Query("SELECT p FROM Product p " +
-           "WHERE (:name IS NULL OR LOWER(p.name) LIKE LOWER(CONCAT('%', :name, '%'))) " +
-           "AND (:category IS NULL OR LOWER(p.category.name) LIKE LOWER(CONCAT('%', :category, '%'))) " +
-           "AND (:brand IS NULL OR LOWER(p.brand) LIKE LOWER(CONCAT('%', :brand, '%')))")
-    Page<Product> search(@Param("name") String name,
-                         @Param("category") String category,
-                         @Param("brand") String brand,
-                         Pageable pageable);
+        List<Product> findByNameContainingIgnoreCaseAndDescriptionContainingIgnoreCaseAndCategory_NameIgnoreCase(
+                        String name, String description, String category);
+
+        @Query("SELECT p FROM Product p " +
+                        "WHERE (:name IS NULL OR LOWER(p.name) LIKE LOWER(CONCAT('%', :name, '%'))) " +
+                        "AND (:category IS NULL OR LOWER(p.category.name) LIKE LOWER(CONCAT('%', :category, '%'))) " +
+                        "AND (:brand IS NULL OR LOWER(p.brand) LIKE LOWER(CONCAT('%', :brand, '%')))")
+        Page<Product> search(@Param("name") String name,
+                        @Param("category") String category,
+                        @Param("brand") String brand,
+                        Pageable pageable);
+
+        @Query("SELECT p FROM Product p LEFT JOIN FETCH p.attributes WHERE p.id = :id")
+        Optional<Product> findByIdWithAttributes(@Param("id") String id);
 }

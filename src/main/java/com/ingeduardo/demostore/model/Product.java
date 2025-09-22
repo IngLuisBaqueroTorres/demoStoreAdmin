@@ -1,6 +1,9 @@
 package com.ingeduardo.demostore.model;
 
+import java.util.ArrayList;
+import java.util.List;
 
+import jakarta.persistence.CascadeType;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.FetchType;
@@ -9,8 +12,11 @@ import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
+import jakarta.persistence.OneToMany;
+import lombok.Data;
 
 @Entity
+@Data
 public class Product {
     @Id
     @Column(columnDefinition = "CHAR(36)")
@@ -26,89 +32,19 @@ public class Product {
     @ManyToOne(fetch = FetchType.EAGER)
     @JoinColumn(name = "category_id")
     private Category category;
-    
+
     private Integer stock;
     private Boolean active = true;
     private Boolean soldOut = false;
 
-    public String getId() {
-        return id;
-    }
+    @OneToMany(mappedBy = "product", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
+    private List<ProductAttributeValue> attributes = new ArrayList<>();
 
-    public void setId(String id) {
-        this.id = id;
-    }
-
-    public String getName() {
-        return name;
-    }
-
-    public void setName(String name) {
-        this.name = name;
-    }
-
-    public String getDescription() {
-        return description;
-    }
-
-    public void setDescription(String description) {
-        this.description = description;
-    }
-
-    public Double getPrice() {
-        return price;
-    }
-
-    public void setPrice(Double price) {
-        this.price = price;
-    }
-
-    public Category getCategory() {
-        return category;
-    }
-
-    public void setCategory(Category category2) {
-        this.category = category2;
-    }
-
-    public Integer getStock() {
-        return stock;
-    }
-
-    public void setStock(Integer stock) {
-        this.stock = stock;
-    }
-
-    public Boolean getActive() {
-        return active;
-    }
-
-    public void setActive(Boolean active) {
-        this.active = active;
-    }
-
-    public String getBrand() {
-        return brand;
-    }
-
-    public void setBrand(String brand) {
-        this.brand = brand;
-    }
-
-    public Double getDiscount() {
-        return discount;
-    }
-    public void setDiscount(Double discount) {
-        this.discount = discount;
-    }
-    public Boolean getSoldOut() {
-        return soldOut;
-    }
     public void setSoldOut(Boolean soldOut) {
         this.soldOut = soldOut;
     }
 
-      public double getFinalPrice() {
+    public double getFinalPrice() {
         if (discount <= 0 || discount >= 100) {
             return price;
         }

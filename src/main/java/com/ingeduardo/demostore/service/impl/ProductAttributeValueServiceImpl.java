@@ -29,7 +29,7 @@ public class ProductAttributeValueServiceImpl implements ProductAttributeValueSe
 
         ProductAttributeValue pav = new ProductAttributeValue();
 
-        pav.setProductId(request.getProductId());
+        pav.setProduct(request.getProduct());
         pav.setAttributeId(request.getAttributeId());
         pav.setValue(request.getValue());
 
@@ -42,7 +42,7 @@ public class ProductAttributeValueServiceImpl implements ProductAttributeValueSe
         ProductAttributeValue pav = repository.findById(id)
                 .orElseThrow(() -> new RuntimeException("ProductAttributeValue not found"));
 
-        pav.setProductId(request.getProductId());
+        pav.setProduct(request.getProduct());
         pav.setAttributeId(request.getAttributeId());
         pav.setValue(request.getValue());
 
@@ -65,7 +65,7 @@ public class ProductAttributeValueServiceImpl implements ProductAttributeValueSe
     private ProductAttributeValueResponseDto mapToResponse(ProductAttributeValue pav) {
         ProductAttributeValueResponseDto dto = new ProductAttributeValueResponseDto();
         dto.setId(pav.getId());
-        dto.setProductId(pav.getProductId());
+        dto.setProductId(pav.getProduct().getId());
         dto.setAttributeId(pav.getAttributeId());
         dto.setValue(pav.getValue());
         return dto;

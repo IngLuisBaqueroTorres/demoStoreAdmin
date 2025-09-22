@@ -1,7 +1,6 @@
 package com.ingeduardo.demostore.service.impl;
 
-import com.ingeduardo.demostore.controller.CategoryController;
-import com.ingeduardo.demostore.dto.CategoryIdDto;
+import com.ingeduardo.demostore.dto.ProductAttributeResponseDto;
 import com.ingeduardo.demostore.dto.ProductRequestDto;
 import com.ingeduardo.demostore.dto.ProductResponseDto;
 import com.ingeduardo.demostore.exception.ResourceNotFoundException;
@@ -17,8 +16,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
-
-import java.util.List;
+import java.util.ArrayList;
 
 @Service
 @RequiredArgsConstructor
@@ -26,17 +24,20 @@ public class ProductServiceImpl implements ProductService {
 
     private final ProductRepository productRepository;
     private final CategoryRepository categoryRepository;
-    private static final Logger logger = LoggerFactory.getLogger(CategoryController.class);
+    private static final String CATEGORY_NOT_FOUND = "Category not found with ID: ";
+
+    private static final Logger logger = LoggerFactory.getLogger(ProductServiceImpl.class);
+
 
     @Override
     public ProductResponseDto createProduct(ProductRequestDto dto, String userRole) {
 
         authorizeAdmin(userRole);
 
-        String categoryId = dto.getCategory().toString();
+        String categoryId = dto.getCategory();
 
         Category category = categoryRepository.findById(categoryId)
-                .orElseThrow(() -> new RuntimeException("Category not found with ID: " + categoryId));
+                .orElseThrow(() -> new RuntimeException(CATEGORY_NOT_FOUND+ categoryId));
 
         Product product = mapToEntity(dto);
         product.setCategory(category);
@@ -64,9 +65,9 @@ public class ProductServiceImpl implements ProductService {
         product.setBrand(dto.getBrand() != null ? dto.getBrand() : product.getBrand());
         product.setSoldOut(dto.isSoldOut());
 
-        String categoryId = dto.getCategory().toString();
+        String categoryId = dto.getCategory();
         Category category = categoryRepository.findById(categoryId)
-                .orElseThrow(() -> new RuntimeException("Category not found with ID: " + categoryId));
+                .orElseThrow(() -> new RuntimeException(CATEGORY_NOT_FOUND + categoryId));
         product.setCategory(category);
 
         product.setStock(dto.getStock());
@@ -92,9 +93,12 @@ public class ProductServiceImpl implements ProductService {
     }
 
     @Override
-    public Product getProductById(String id, String userRole) {
-        return productRepository.findById(id)
-                .orElseThrow(() -> new ResourceNotFoundException("Product not found with id: " + id));
+    public ProductResponseDto getProductById(String id, String userRole) {
+
+        Product product = productRepository.findByIdWithAttributes(id)
+                .orElseThrow(() -> new RuntimeException("Product not found with id: " + id));
+
+        return mapToResponseDto(product);
     }
 
     @Override
@@ -128,33 +132,34 @@ public class ProductServiceImpl implements ProductService {
 
         String categoryId = dto.getCategory();
         Category category = categoryRepository.findById(categoryId)
-                .orElseThrow(() -> new RuntimeException("Category not found with ID: " + categoryId));
+                .orElseThrow(() -> new RuntimeException(CATEGORY_NOT_FOUND + categoryId));
         product.setCategory(category);
 
         return product;
     }
 
     private ProductResponseDto mapToResponseDto(Product product) {
-        ProductResponseDto dto = new ProductResponseDto();
-
-        Double discount = product.getDiscount() != null ? product.getDiscount() : 0.0;
-        Double price = product.getPrice() != null ? product.getPrice() : 0.0;
-        logger.info("Fetched products: {}", product.getDiscount());        
-
-        dto.setId(product.getId());
-        dto.setName(product.getName());
-        dto.setDescription(product.getDescription());
-        dto.setPrice(price);
-        dto.setStock(product.getStock());
-        dto.setDiscount(discount);
-        dto.setBrand(product.getBrand());
-        dto.setActive(product.getActive());
-        dto.setSoldOut(product.getSoldOut());
-        dto.setFinalPrice(product.getFinalPrice());
-
-        CategoryIdDto categoryDto = new CategoryIdDto();
-        categoryDto.setId(product.getCategory().getId());
-        dto.setCategory(product.getCategory());
-        return dto;
+        return ProductResponseDto.builder()
+                .id(product.getId())
+                .name(product.getName())
+                .description(product.getDescription())
+                .price(product.getPrice())
+                .discount(product.getDiscount())
+                .finalPrice(product.getFinalPrice())
+                .stock(product.getStock())
+                .category(product.getCategory())
+                .active(product.getActive())
+                .soldOut(product.getSoldOut())
+                .brand(product.getBrand())
+                .attributes(
+                        product.getAttributes() != null ? product.getAttributes().stream()
+                                .map(attrValue -> ProductAttributeResponseDto.builder()
+                                        .attributeId(attrValue.getAttributeId())
+                                        .value(attrValue.getValue())
+                                        .build())
+                                        .toList()
+                                : new ArrayList<>())
+                .build();
     }
+
 }

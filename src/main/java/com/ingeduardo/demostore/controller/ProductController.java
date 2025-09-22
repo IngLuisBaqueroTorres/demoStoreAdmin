@@ -58,8 +58,8 @@ public class ProductController {
     @PreAuthorize("hasAnyRole('ADMIN', 'SUPER_ADMIN')")
     public ResponseEntity<ProductResponseDto> getProductById(@PathVariable String id, Authentication authentication) {
         String userRole = getUserRole(authentication);
-        Product product = productService.getProductById(id, userRole);
-        return product != null ? ResponseEntity.ok(mapToResponseDTO(product)) : ResponseEntity.notFound().build();
+        ProductResponseDto productDto = productService.getProductById(id, userRole);
+        return productDto != null ? ResponseEntity.ok(productDto) : ResponseEntity.notFound().build();
     }
 
     @PutMapping("/{id}")

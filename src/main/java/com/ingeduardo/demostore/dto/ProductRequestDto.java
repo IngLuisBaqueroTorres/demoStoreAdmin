@@ -1,6 +1,7 @@
 package com.ingeduardo.demostore.dto;
 
-import com.ingeduardo.demostore.model.Category;
+
+import java.util.List;
 
 import lombok.Data;
 
@@ -15,6 +16,7 @@ public class ProductRequestDto {
     private String  category;
     private boolean active = true;
     private boolean soldOut = false;
+    private List<ProductAttributeRequestDto> attributes;
 
     // Getters and setters
     public String  getCategory() {
