@@ -14,7 +14,7 @@ import com.ingeduardo.demostore.model.Product;
 
 @Repository
 public interface ProductRepository extends JpaRepository<Product, String> {
-        List<Product> findByActiveTrue();
+        List<Product> findByIsActiveTrue();
 
         @Query("SELECT p FROM Product p WHERE LOWER(p.name) LIKE LOWER(CONCAT('%', :term, '%'))")
         List<Product> findByNameContainingIgnoreCase(String name);
@@ -32,10 +32,10 @@ public interface ProductRepository extends JpaRepository<Product, String> {
         @Query("SELECT p FROM Product p " +
                         "WHERE (:name IS NULL OR LOWER(p.name) LIKE LOWER(CONCAT('%', :name, '%'))) " +
                         "AND (:category IS NULL OR LOWER(p.category.name) LIKE LOWER(CONCAT('%', :category, '%'))) " +
-                        "AND (:brand IS NULL OR LOWER(p.brand) LIKE LOWER(CONCAT('%', :brand, '%')))")
+                        "AND (:brandName IS NULL OR LOWER(p.brand.name) LIKE LOWER(CONCAT('%', :brandName, '%')))")
         Page<Product> search(@Param("name") String name,
                         @Param("category") String category,
-                        @Param("brand") String brand,
+                        @Param("brandName") String brandName,
                         Pageable pageable);
 
         @Query("SELECT p FROM Product p LEFT JOIN FETCH p.attributes WHERE p.id = :id")

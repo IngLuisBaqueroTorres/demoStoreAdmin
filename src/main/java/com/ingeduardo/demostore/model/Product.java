@@ -29,15 +29,18 @@ public class Product {
     private String description;
     private Double price;
     private Double discount = 0.0;
-    private String brand;
+
+    @ManyToOne(fetch = FetchType.EAGER)
+    @JoinColumn(name = "brand_id")
+    private Brand brand;
 
     @ManyToOne(fetch = FetchType.EAGER)
     @JoinColumn(name = "category_id")
     private Category category;
 
     private Integer stock;
-    private Boolean active = true;
-    private Boolean soldOut = false;
+    private Boolean isActive = true;
+    private Boolean isSoldOut = false;
 
     @OneToMany(mappedBy = "product", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
     private List<ProductAttributeValue> attributes = new ArrayList<>();
@@ -47,8 +50,8 @@ public class Product {
     @Column(name = "image_url")
     private List<String> images = new ArrayList<>();
 
-    public void setSoldOut(Boolean soldOut) {
-        this.soldOut = soldOut;
+    public void setSoldOut(Boolean isSoldOut) {
+        this.isSoldOut = isSoldOut;
     }
 
     public double getFinalPrice() {

@@ -11,11 +11,11 @@ public class ProductRequestDto {
     private String description;
     private double price;
     private double discount = 0.0;
-    private String brand;
+    private String brandId;
     private int stock;
     private String  category;
-    private boolean active = true;
-    private boolean soldOut = false;
+    private boolean isActive = true;
+    private boolean isSoldOut = false;
     private List<String> images;
     private List<ProductAttributeRequestDto> attributes;
 
@@ -27,10 +27,10 @@ public class ProductRequestDto {
         this.category = category;
     }
     public boolean getActive() {
-        return active;
+        return isActive;
     }
-    public void setActive(boolean active) {
-        this.active = active;
+    public void isActive(boolean isActive) {
+        this.isActive = isActive;
     }
 
 }

@@ -10,10 +10,10 @@ import com.ingeduardo.demostore.model.Product;
 
 public interface ProductService {
     ProductResponseDto createProduct(ProductRequestDto productRequest, String userRole);
-    Product updateProduct(String id, ProductRequestDto productRequest, String userRole);
+    ProductResponseDto updateProduct(String id, ProductRequestDto productRequest, String userRole);
     void deleteProduct(String id, String userRole);
-    Page<Product> getAllProducts(String userRole, Pageable pageable);
+    Page<ProductResponseDto> getAllProducts(String userRole, Pageable pageable);
     ProductResponseDto getProductById(String id, String userRole);
-    Page<Product> search(String name, String category, String brand, Pageable pageable);
+    Page<ProductResponseDto> search(String name, String category, String brandName, Pageable pageable);
 
 }
