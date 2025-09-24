@@ -27,7 +27,7 @@ public class JwtService {
     Map<String, Object> claims = new HashMap<>();
 
     List<String> roles = user.getRoles().stream()
-            .map(role -> role.getName().name())
+            .map(Role::getName)
             .collect(Collectors.toList());
 
     claims.put("roles", roles);
@@ -51,23 +51,12 @@ public class JwtService {
     }
 
     private boolean isTokenExpired(String token) {
-        return extractClaim(token, claims -> claims.getExpiration()).before(new Date());
+        return extractClaim(token, Claims::getExpiration).before(new Date());
     }
 
-    private <T> T extractClaim(String token, Function<io.jsonwebtoken.Claims, T> claimsResolver) {
+    private <T> T extractClaim(String token, Function<Claims, T> claimsResolver) {
         var claims = Jwts.parserBuilder().setSigningKey(key).build()
                 .parseClaimsJws(token).getBody();
         return claimsResolver.apply(claims);
     }
-
-    public List<String> extractRoles(String token) {
-    Claims claims = Jwts.parserBuilder()
-            .setSigningKey(key)
-            .build()
-            .parseClaimsJws(token)
-            .getBody();
-
-    return claims.get("roles", List.class);
-}
-
 }
