@@ -3,6 +3,7 @@ package com.ingeduardo.demostore.model;
 import jakarta.persistence.*;
 import lombok.Data;
 
+import java.math.BigDecimal;
 import java.util.UUID;
 
 @Entity
@@ -24,7 +25,7 @@ public class OrderItem {
 
     private Integer quantity;
 
-    private Double priceAtPurchase;
+    private BigDecimal priceAtPurchase;
 
     @PrePersist
     public void ensureId() {

@@ -1,14 +1,13 @@
 package com.ingeduardo.demostore.model;
 
+import com.ingeduardo.demostore.model.enums.OrderStatus;
 import jakarta.persistence.*;
 import lombok.Data;
 
+import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.UUID;
-
-import com.ingeduardo.demostore.model.enums.OrderStatus;
 
 @Entity
 @Table(name = "orders") // "Order" might be a reserved keyword in some DBs
@@ -26,7 +25,7 @@ public class Order {
 
     private LocalDateTime orderDate;
 
-    private Double totalAmount;
+    private BigDecimal totalAmount;
 
     @Enumerated(EnumType.STRING)
     private OrderStatus status;
@@ -38,6 +37,12 @@ public class Order {
     @OneToMany(mappedBy = "order", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<OrderItem> orderItems = new ArrayList<>();
 
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "coupon_id")
+    private Coupon coupon;
+
+    private BigDecimal discountAmount = BigDecimal.ZERO;
+
     @PrePersist
     public void prePersist() {
         if (orderDate == null) {
@@ -46,5 +51,15 @@ public class Order {
         if (status == null) {
             status = OrderStatus.PENDING;
         }
+    }
+
+    public BigDecimal getFinalAmount() {
+        if (totalAmount == null) {
+            return BigDecimal.ZERO;
+        }
+        if (discountAmount == null) {
+            return totalAmount;
+        }
+        return totalAmount.subtract(discountAmount);
     }
 }

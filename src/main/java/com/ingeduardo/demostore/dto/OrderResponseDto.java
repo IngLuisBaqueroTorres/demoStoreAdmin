@@ -3,6 +3,7 @@ package com.ingeduardo.demostore.dto;
 import com.ingeduardo.demostore.model.enums.OrderStatus;
 import lombok.Data;
 
+import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.util.List;
 
@@ -12,9 +13,12 @@ public class OrderResponseDto {
     private String customerId;
     private String customerName;
     private LocalDateTime orderDate;
-    private Double totalAmount;
+    private BigDecimal totalAmount;
     private OrderStatus status;
     private String shippingAddress;
     private String billingAddress;
     private List<OrderItemResponseDto> items;
+    private String couponCode;
+    private BigDecimal discountAmount;
+    private BigDecimal finalAmount;
 }

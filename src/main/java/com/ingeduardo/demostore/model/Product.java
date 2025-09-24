@@ -1,5 +1,6 @@
 package com.ingeduardo.demostore.model;
 
+import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -27,8 +28,8 @@ public class Product {
 
     private String name;
     private String description;
-    private Double price;
-    private Double discount = 0.0;
+    private BigDecimal price;
+    private BigDecimal discount = BigDecimal.ZERO;
 
     @ManyToOne(fetch = FetchType.EAGER)
     @JoinColumn(name = "brand_id")
@@ -54,11 +55,15 @@ public class Product {
         this.isSoldOut = isSoldOut;
     }
 
-    public double getFinalPrice() {
-        if (discount <= 0 || discount >= 100) {
+    public BigDecimal getFinalPrice() {
+        if (price == null) {
+            return BigDecimal.ZERO;
+        }
+        if (discount == null || discount.compareTo(BigDecimal.ZERO) <= 0 || discount.compareTo(new BigDecimal("100")) >= 0) {
             return price;
         }
-        double descuentoAplicado = price * (discount / 100.0);
-        return price - descuentoAplicado;
+        BigDecimal discountMultiplier = discount.divide(new BigDecimal("100"), 2, java.math.RoundingMode.HALF_UP);
+        BigDecimal discountAmount = price.multiply(discountMultiplier);
+        return price.subtract(discountAmount);
     }
 }

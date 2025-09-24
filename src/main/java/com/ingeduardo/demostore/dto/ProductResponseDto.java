@@ -1,10 +1,9 @@
 package com.ingeduardo.demostore.dto;
 
+import java.math.BigDecimal;
 import java.util.List;
-
 import com.ingeduardo.demostore.model.Brand;
 import com.ingeduardo.demostore.model.Category;
-
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -18,9 +17,9 @@ public class ProductResponseDto {
     private String id;
     private String name;
     private String description;
-    private double price;
-    private double discount;
-    private double finalPrice;
+    private BigDecimal price;
+    private BigDecimal discount;
+    private BigDecimal finalPrice;
     private int stock;
     private Category category;
     private boolean active;

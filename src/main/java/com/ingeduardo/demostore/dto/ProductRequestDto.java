@@ -1,16 +1,15 @@
 package com.ingeduardo.demostore.dto;
 
-
+import java.math.BigDecimal;
 import java.util.List;
-
 import lombok.Data;
 
 @Data
 public class ProductRequestDto {
     private String name;
     private String description;
-    private double price;
-    private double discount = 0.0;
+    private BigDecimal price;
+    private BigDecimal discount = BigDecimal.ZERO;
     private String brandId;
     private int stock;
     private String  category;
@@ -32,5 +31,4 @@ public class ProductRequestDto {
     public void isActive(boolean isActive) {
         this.isActive = isActive;
     }
-
 }

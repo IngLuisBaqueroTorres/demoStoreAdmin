@@ -40,4 +40,6 @@ public interface ProductRepository extends JpaRepository<Product, String> {
 
         @Query("SELECT p FROM Product p LEFT JOIN FETCH p.attributes WHERE p.id = :id")
         Optional<Product> findByIdWithAttributes(@Param("id") String id);
+        
+        List<Product> findByStockLessThan(Integer stock);
 }
