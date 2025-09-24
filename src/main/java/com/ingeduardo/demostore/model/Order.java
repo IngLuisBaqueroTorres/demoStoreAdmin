@@ -43,6 +43,17 @@ public class Order {
 
     private BigDecimal discountAmount = BigDecimal.ZERO;
 
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "shipping_method_id")
+    private ShippingMethod shippingMethod;
+
+    private BigDecimal shippingCost = BigDecimal.ZERO;
+
+    private String trackingNumber;
+
+    @OneToOne(mappedBy = "order", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
+    private Payment payment;
+
     @PrePersist
     public void prePersist() {
         if (orderDate == null) {
@@ -54,12 +65,10 @@ public class Order {
     }
 
     public BigDecimal getFinalAmount() {
-        if (totalAmount == null) {
-            return BigDecimal.ZERO;
-        }
-        if (discountAmount == null) {
-            return totalAmount;
-        }
-        return totalAmount.subtract(discountAmount);
+        BigDecimal finalAmount = totalAmount != null ? totalAmount : BigDecimal.ZERO;
+        BigDecimal discount = discountAmount != null ? discountAmount : BigDecimal.ZERO;
+        BigDecimal shipping = shippingCost != null ? shippingCost : BigDecimal.ZERO;
+        
+        return finalAmount.subtract(discount).add(shipping);
     }
 }

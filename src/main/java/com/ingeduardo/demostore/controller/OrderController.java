@@ -53,4 +53,11 @@ public class OrderController {
         OrderResponseDto updatedOrder = orderService.updateOrderStatus(id, status);
         return ResponseEntity.ok(updatedOrder);
     }
+
+    @PutMapping("/{id}/tracking")
+    @PreAuthorize("hasAnyRole('ADMIN', 'SUPER_ADMIN')")
+    public ResponseEntity<OrderResponseDto> updateTrackingNumber(@PathVariable String id, @RequestBody com.ingeduardo.demostore.dto.UpdateTrackingNumberRequestDto request) {
+        OrderResponseDto updatedOrder = orderService.updateTrackingNumber(id, request.getTrackingNumber());
+        return ResponseEntity.ok(updatedOrder);
+    }
 }

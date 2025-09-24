@@ -8,11 +8,7 @@ import com.ingeduardo.demostore.exception.ResourceNotFoundException;
 import com.ingeduardo.demostore.model.*;
 import com.ingeduardo.demostore.model.enums.DiscountType;
 import com.ingeduardo.demostore.model.enums.OrderStatus;
-import com.ingeduardo.demostore.repository.CouponRepository;
-import com.ingeduardo.demostore.repository.CustomerRepository;
-import com.ingeduardo.demostore.repository.OrderItemRepository;
-import com.ingeduardo.demostore.repository.OrderRepository;
-import com.ingeduardo.demostore.repository.ProductRepository;
+import com.ingeduardo.demostore.repository.*;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -34,6 +30,7 @@ public class OrderService {
     private final ProductRepository productRepository;
     private final CustomerRepository customerRepository;
     private final CouponRepository couponRepository;
+    private final ShippingMethodRepository shippingMethodRepository;
 
     @Transactional
     public OrderResponseDto createOrder(OrderRequestDto orderRequest) {
@@ -78,6 +75,14 @@ public class OrderService {
         // Handle coupon
         if (StringUtils.hasText(orderRequest.getCouponCode())) {
             applyCoupon(orderRequest.getCouponCode(), order);
+        }
+
+        // Handle Shipping
+        if (orderRequest.getShippingMethodId() != null) {
+            ShippingMethod shippingMethod = shippingMethodRepository.findById(orderRequest.getShippingMethodId())
+                    .orElseThrow(() -> new ResourceNotFoundException("ShippingMethod not found with ID: " + orderRequest.getShippingMethodId()));
+            order.setShippingMethod(shippingMethod);
+            order.setShippingCost(shippingMethod.getCost());
         }
 
         Order savedOrder = orderRepository.save(order);
@@ -153,6 +158,19 @@ public class OrderService {
         return mapToOrderResponseDto(updatedOrder);
     }
 
+    @Transactional
+    public OrderResponseDto updateTrackingNumber(String orderId, String trackingNumber) {
+        Order order = orderRepository.findById(orderId)
+                .orElseThrow(() -> new ResourceNotFoundException("Order not found with ID: " + orderId));
+        order.setTrackingNumber(trackingNumber);
+        // Optionally, update status to SHIPPED when a tracking number is added
+        if (order.getStatus() == OrderStatus.PAID) { // Or some other appropriate status
+            order.setStatus(OrderStatus.SHIPPED);
+        }
+        Order updatedOrder = orderRepository.save(order);
+        return mapToOrderResponseDto(updatedOrder);
+    }
+
     public OrderResponseDto mapToOrderResponseDto(Order order) {
         List<OrderItemResponseDto> itemDtos = order.getOrderItems().stream()
                 .map(item -> {
@@ -182,6 +200,13 @@ public class OrderService {
         } else {
             dto.setDiscountAmount(BigDecimal.ZERO);
         }
+
+        if (order.getShippingMethod() != null) {
+            dto.setShippingMethodName(order.getShippingMethod().getName());
+            dto.setShippingCost(order.getShippingCost());
+        }
+
+        dto.setTrackingNumber(order.getTrackingNumber());
         dto.setFinalAmount(order.getFinalAmount());
 
         return dto;

@@ -11,4 +11,5 @@ public class OrderRequestDto {
     private String billingAddress;
     private List<OrderItemRequestDto> items;
     private String couponCode;
+    private Long shippingMethodId;
 }

@@ -20,5 +20,8 @@ public class OrderResponseDto {
     private List<OrderItemResponseDto> items;
     private String couponCode;
     private BigDecimal discountAmount;
+    private BigDecimal shippingCost;
+    private String shippingMethodName;
+    private String trackingNumber;
     private BigDecimal finalAmount;
 }
