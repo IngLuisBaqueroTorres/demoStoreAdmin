@@ -34,16 +34,15 @@ public class ProductServiceImpl implements ProductService {
 
 
     @Override
-    public ProductResponseDto createProduct(ProductRequestDto dto, String userRole) {
-        authorizeAdmin(userRole);
+    public ProductResponseDto createProduct(ProductRequestDto dto) {
+      
         Product product = mapToEntity(dto);
         Product savedProduct = productRepository.save(product);
         return mapToResponseDto(savedProduct);
     }
 
     @Override
-    public ProductResponseDto updateProduct(String id, ProductRequestDto dto, String userRole) {
-        authorizeAdmin(userRole);
+    public ProductResponseDto updateProduct(String id, ProductRequestDto dto) {
 
         Product product = productRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Product not found with id: " + id));
@@ -53,12 +52,12 @@ public class ProductServiceImpl implements ProductService {
         product.setPrice(dto.getPrice());
         product.setDiscount(dto.getDiscount());
         product.setStock(dto.getStock());
-        product.setIsActive(dto.getActive());
+        product.setIsActive(dto.isActive());
         product.setSoldOut(dto.isSoldOut());
 
-        if (dto.getCategory() != null) {
-            Category category = categoryRepository.findById(dto.getCategory())
-                    .orElseThrow(() -> new RuntimeException(CATEGORY_NOT_FOUND + dto.getCategory()));
+        if (dto.getCategoryId() != null) {
+            Category category = categoryRepository.findById(dto.getCategoryId())
+                    .orElseThrow(() -> new RuntimeException(CATEGORY_NOT_FOUND + dto.getCategoryId()));
             product.setCategory(category);
         }
 
@@ -73,8 +72,7 @@ public class ProductServiceImpl implements ProductService {
     }
 
     @Override
-    public void deleteProduct(String id, String userRole) {
-        authorizeAdmin(userRole);
+    public void deleteProduct(String id) {
 
         if (!productRepository.existsById(id)) {
             throw new ResourceNotFoundException("Product not found with id: " + id);
@@ -84,13 +82,13 @@ public class ProductServiceImpl implements ProductService {
     }
 
     @Override
-    public Page<ProductResponseDto> getAllProducts(String userRole, Pageable pageable) {
+    public Page<ProductResponseDto> getAllProducts(Pageable pageable) {
         Page<Product> productsPage = productRepository.findAll(pageable);
         return productsPage.map(this::mapToResponseDto);
     }
 
     @Override
-    public ProductResponseDto getProductById(String id, String userRole) {
+    public ProductResponseDto getProductById(String id) {
 
         Product product = productRepository.findByIdWithAttributes(id)
                 .orElseThrow(() -> new RuntimeException("Product not found with id: " + id));
@@ -104,12 +102,6 @@ public class ProductServiceImpl implements ProductService {
         return productsPage.map(this::mapToResponseDto);
     }
 
-    private void authorizeAdmin(String userRole) {
-        if (!userRole.equals("ROLE_ADMIN") && !userRole.equals("ROLE_SUPER_ADMIN")) {
-            throw new SecurityException("You are not authorized to perform this action.");
-        }
-    }
-
     private Product mapToEntity(ProductRequestDto dto) {
         Product product = new Product();
         product.setName(dto.getName());
@@ -117,13 +109,13 @@ public class ProductServiceImpl implements ProductService {
         product.setPrice(dto.getPrice());
         product.setStock(dto.getStock());
         product.setDiscount(dto.getDiscount());
-        product.setIsActive(dto.getActive());
+        product.setIsActive(dto.isActive());
         product.setSoldOut(dto.isSoldOut());
         product.setImages(dto.getImages());
 
-        if (dto.getCategory() != null) {
-            Category category = categoryRepository.findById(dto.getCategory())
-                    .orElseThrow(() -> new RuntimeException(CATEGORY_NOT_FOUND + dto.getCategory()));
+        if (dto.getCategoryId() != null) {
+            Category category = categoryRepository.findById(dto.getCategoryId())
+                    .orElseThrow(() -> new RuntimeException(CATEGORY_NOT_FOUND + dto.getCategoryId()));
             product.setCategory(category);
         }
 

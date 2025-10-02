@@ -17,19 +17,19 @@ public class PaymentController {
     private final PaymentService paymentService;
 
     @GetMapping
-    @PreAuthorize("hasAnyRole('ADMIN', 'SUPER_ADMIN')")
+    @PreAuthorize("hasPermission(null, 'VIEW_PAYMENTS')")
     public ResponseEntity<List<PaymentResponseDto>> getAllPayments() {
         return ResponseEntity.ok(paymentService.getAllPayments());
     }
 
     @GetMapping("/{id}")
-    @PreAuthorize("hasAnyRole('ADMIN', 'SUPER_ADMIN')")
+    @PreAuthorize("hasPermission(null, 'VIEW_PAYMENTS')")
     public ResponseEntity<PaymentResponseDto> getPaymentById(@PathVariable String id) {
         return ResponseEntity.ok(paymentService.getPaymentById(id));
     }
 
     @GetMapping("/order/{orderId}")
-    @PreAuthorize("hasAnyRole('ADMIN', 'SUPER_ADMIN')")
+    @PreAuthorize("hasPermission(null, 'VIEW_PAYMENTS')")
     public ResponseEntity<List<PaymentResponseDto>> getPaymentsForOrder(@PathVariable String orderId) {
         return ResponseEntity.ok(paymentService.getPaymentsForOrder(orderId));
     }

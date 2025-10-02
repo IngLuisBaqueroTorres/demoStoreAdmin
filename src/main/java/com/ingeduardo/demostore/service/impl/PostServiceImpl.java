@@ -53,7 +53,7 @@ public class PostServiceImpl implements PostService {
         }
 
         if (requestDto.getCategoryId() != null) {
-            Category category = categoryRepository.findById(requestDto.getCategoryId())
+            Category category = categoryRepository.findById(String.valueOf(requestDto.getCategoryId()))
                     .orElseThrow(() -> new ResourceNotFoundException("Category not found with id: " + requestDto.getCategoryId()));
             post.setCategory(category);
         }
@@ -79,7 +79,7 @@ public class PostServiceImpl implements PostService {
         }
 
         if (requestDto.getCategoryId() != null) {
-            Category category = categoryRepository.findById(requestDto.getCategoryId())
+            Category category = categoryRepository.findById(String.valueOf(requestDto.getCategoryId()))
                     .orElseThrow(() -> new ResourceNotFoundException("Category not found with id: " + requestDto.getCategoryId()));
             post.setCategory(category);
         }

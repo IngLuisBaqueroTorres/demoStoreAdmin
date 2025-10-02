@@ -19,45 +19,45 @@ public class RoleController {
     private final RoleService roleService;
 
     @GetMapping
-    @PreAuthorize("hasAnyRole('ADMIN', 'SUPER_ADMIN')")
+    @PreAuthorize("hasPermission(null, 'VIEW_ROLES')")
     public ResponseEntity<List<RoleResponseDto>> getAllRoles() {
         return ResponseEntity.ok(roleService.getAllRoles());
     }
 
     @GetMapping("/{id}")
-    @PreAuthorize("hasAnyRole('ADMIN', 'SUPER_ADMIN')")
+    @PreAuthorize("hasPermission(null, 'VIEW_ROLES')")
     public ResponseEntity<RoleResponseDto> getRoleById(@PathVariable Long id) {
         return ResponseEntity.ok(roleService.getRoleById(id));
     }
 
     @PostMapping
-    @PreAuthorize("hasAnyRole('SUPER_ADMIN')")
+    @PreAuthorize("hasPermission(null, 'MANAGE_ROLES')")
     public ResponseEntity<RoleResponseDto> createRole(@RequestBody RoleRequestDto requestDto) {
         RoleResponseDto createdRole = roleService.createRole(requestDto);
         return new ResponseEntity<>(createdRole, HttpStatus.CREATED);
     }
 
     @PutMapping("/{id}")
-    @PreAuthorize("hasAnyRole('SUPER_ADMIN')")
+    @PreAuthorize("hasPermission(null, 'MANAGE_ROLES')")
     public ResponseEntity<RoleResponseDto> updateRole(@PathVariable Long id, @RequestBody RoleRequestDto requestDto) {
         return ResponseEntity.ok(roleService.updateRole(id, requestDto));
     }
 
     @DeleteMapping("/{id}")
-    @PreAuthorize("hasAnyRole('SUPER_ADMIN')")
+    @PreAuthorize("hasPermission(null, 'MANAGE_ROLES')")
     public ResponseEntity<Void> deleteRole(@PathVariable Long id) {
         roleService.deleteRole(id);
         return ResponseEntity.noContent().build();
     }
 
     @PostMapping("/{id}/permissions")
-    @PreAuthorize("hasAnyRole('SUPER_ADMIN')")
+    @PreAuthorize("hasPermission(null, 'MANAGE_ROLES')")
     public ResponseEntity<RoleResponseDto> assignPermissionsToRole(@PathVariable Long id, @RequestBody List<Long> permissionIds) {
         return ResponseEntity.ok(roleService.assignPermissionsToRole(id, permissionIds));
     }
 
     @DeleteMapping("/{id}/permissions")
-    @PreAuthorize("hasAnyRole('SUPER_ADMIN')")
+    @PreAuthorize("hasPermission(null, 'MANAGE_ROLES')")
     public ResponseEntity<RoleResponseDto> removePermissionsFromRole(@PathVariable Long id, @RequestBody List<Long> permissionIds) {
         return ResponseEntity.ok(roleService.removePermissionsFromRole(id, permissionIds));
     }

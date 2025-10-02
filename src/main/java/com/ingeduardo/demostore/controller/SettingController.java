@@ -17,19 +17,19 @@ public class SettingController {
     private final SettingService settingService;
 
     @GetMapping
-    @PreAuthorize("hasAnyRole('ADMIN', 'SUPER_ADMIN')")
+    @PreAuthorize("hasPermission(null, 'VIEW_SETTINGS')")
     public ResponseEntity<SettingResponseDto> getSettings() {
         return ResponseEntity.ok(settingService.getSettings());
     }
 
     @PutMapping
-    @PreAuthorize("hasAnyRole('ADMIN', 'SUPER_ADMIN')")
+    @PreAuthorize("hasPermission(null, 'MANAGE_SETTINGS')")
     public ResponseEntity<SettingResponseDto> updateSettings(@RequestBody SettingRequestDto requestDto) {
         return ResponseEntity.ok(settingService.updateSettings(requestDto));
     }
 
     @PostMapping("/initialize")
-    @PreAuthorize("hasAnyRole('ADMIN', 'SUPER_ADMIN')")
+    @PreAuthorize("hasPermission(null, 'MANAGE_SETTINGS')")
     public ResponseEntity<SettingResponseDto> initializeSettings() {
         return new ResponseEntity<>(settingService.initializeSettings(), HttpStatus.CREATED);
     }

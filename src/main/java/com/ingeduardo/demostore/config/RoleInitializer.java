@@ -2,6 +2,7 @@ package com.ingeduardo.demostore.config;
 
 import com.ingeduardo.demostore.model.Permission;
 import com.ingeduardo.demostore.model.Role;
+import com.ingeduardo.demostore.model.enums.RoleName;
 import com.ingeduardo.demostore.repository.PermissionRepository;
 import com.ingeduardo.demostore.repository.RoleRepository;
 import lombok.RequiredArgsConstructor;
@@ -12,6 +13,8 @@ import java.util.Arrays;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
+
+import static com.ingeduardo.demostore.model.enums.RoleName.*;
 
 @Component
 @RequiredArgsConstructor
@@ -44,15 +47,15 @@ public class RoleInitializer implements CommandLineRunner {
         List<Permission> allPermissions = permissionRepository.findAll();
 
         // Create roles and assign permissions
-        createRoleIfNotFound("SUPER_ADMIN", new HashSet<>(allPermissions));
-        createRoleIfNotFound("ADMIN", new HashSet<>(Arrays.asList(
+        createRoleIfNotFound(SUPER_ADMIN, new HashSet<>(allPermissions));
+        createRoleIfNotFound(ADMIN, new HashSet<>(Arrays.asList(
                 viewOrders, manageOrders,
                 viewProducts, manageProducts,
                 viewUsers, viewSettings, manageSettings,
                 viewShippingMethods, manageShippingMethods,
                 viewPayments, managePayments
         )));
-        createRoleIfNotFound("USER", new HashSet<>(Arrays.asList(
+        createRoleIfNotFound(USER, new HashSet<>(Arrays.asList(
                 viewOrders, viewProducts
         )));
 
@@ -68,22 +71,24 @@ public class RoleInitializer implements CommandLineRunner {
         });
     }
 
-    private void createRoleIfNotFound(String roleName, Set<Permission> permissions) {
-        roleRepository.findByName(roleName).ifPresentOrElse(existingRole -> {
+    private void createRoleIfNotFound(RoleName roleName, Set<Permission> permissions) {
+        roleRepository.findByName(roleName.name()).ifPresentOrElse(existingRole -> {
             // Update existing role's permissions if they are different
             if (!existingRole.getPermissions().equals(permissions)) {
                 existingRole.setPermissions(permissions);
                 roleRepository.save(existingRole);
                 System.out.println("🔧 Updated permissions for role: " + roleName);
+            } else {
+                System.out.println("✅ Role already exists: " + roleName);
             }
-            System.out.println("✅ Role already exists: " + roleName);
         }, () -> {
             Role newRole = new Role();
-            newRole.setName(roleName);
+            newRole.setName(roleName.name());
             newRole.setPermissions(permissions);
             roleRepository.save(newRole);
             System.out.println("🔧 Created role: " + roleName);
         });
     }
+
 }
 

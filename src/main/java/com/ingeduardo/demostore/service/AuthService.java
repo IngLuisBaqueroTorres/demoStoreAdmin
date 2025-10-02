@@ -45,10 +45,10 @@ public class AuthService {
                 }
                 List<Role> roles = request.getRoles().stream()
                                 .map(roleEnum -> {
-                                        Optional<Role> optionalRole = roleRepository.findByName(roleEnum);
+                                        Optional<Role> optionalRole = roleRepository.findByName(String.valueOf(roleEnum));
                                         return optionalRole.orElseGet(() -> {
                                                 Role newRole = new Role();
-                                                newRole.setName(roleEnum);
+                                                newRole.setName(String.valueOf(roleEnum));
                                                 return roleRepository.save(newRole);
                                         });
                                 })

@@ -6,6 +6,7 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Sort;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.data.domain.Pageable;
 
@@ -22,6 +23,7 @@ public class BrandController {
     }
 
     @GetMapping
+    @PreAuthorize("hasPermission(null, 'VIEW_PRODUCTS')")
     public ResponseEntity<Page<Brand>> getAllBrands(
             @RequestParam(required = false) String name,
             @RequestParam(required = false) String description,
@@ -38,24 +40,28 @@ public class BrandController {
     }
 
     @GetMapping("/{id}")
+    @PreAuthorize("hasPermission(null, 'VIEW_PRODUCTS')")
     public ResponseEntity<Brand> getBrandById(@PathVariable String id) {
         Brand brand = service.findById(id);
         return brand != null ? ResponseEntity.ok(brand) : ResponseEntity.notFound().build();
     }
 
     @PostMapping
+    @PreAuthorize("hasPermission(null, 'MANAGE_PRODUCTS')")
     public ResponseEntity<Brand> createBrand(@RequestBody Brand brand) {
         Brand newBrand = service.save(brand);
         return ResponseEntity.status(201).body(newBrand);
     }
 
     @PutMapping("/{id}")
+    @PreAuthorize("hasPermission(null, 'MANAGE_PRODUCTS')")
     public ResponseEntity<Brand> updateBrand(@PathVariable String id, @RequestBody Brand brandDetails) {
         Brand updatedBrand = service.update(id, brandDetails);
         return ResponseEntity.ok(updatedBrand);
     }
 
     @DeleteMapping("/{id}")
+    @PreAuthorize("hasPermission(null, 'MANAGE_PRODUCTS')")
     public ResponseEntity<Void> deleteBrand(@PathVariable String id) {
         service.delete(id);
         return ResponseEntity.noContent().build();

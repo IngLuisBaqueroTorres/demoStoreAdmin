@@ -9,6 +9,7 @@ import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Sort;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -25,6 +26,7 @@ public class CategoryController {
     }
 
     @GetMapping
+    @PreAuthorize("hasPermission(null, 'VIEW_PRODUCTS')")
     public ResponseEntity<List<CategoryResponseDto>> getTopLevelCategories() {
         List<Category> topLevelCategories = service.findTopLevelCategories();
         List<CategoryResponseDto> dtoList = topLevelCategories.stream()
@@ -34,6 +36,7 @@ public class CategoryController {
     }
 
     @GetMapping("/search")
+    @PreAuthorize("hasPermission(null, 'VIEW_PRODUCTS')")
     public ResponseEntity<Page<CategoryResponseDto>> search(
             @RequestParam(required = false) String name,
             @RequestParam(required = false) String description,
@@ -53,18 +56,21 @@ public class CategoryController {
     }
 
     @GetMapping("/{id}")
+    @PreAuthorize("hasPermission(null, 'VIEW_PRODUCTS')")
     public ResponseEntity<CategoryResponseDto> getById(@PathVariable String id) {
         Category category = service.findById(id);
         return category != null ? ResponseEntity.ok(toDto(category)) : ResponseEntity.notFound().build();
     }
 
     @PostMapping
+    @PreAuthorize("hasPermission(null, 'MANAGE_PRODUCTS')")
     public ResponseEntity<CategoryResponseDto> create(@RequestBody CategoryRequestDto categoryDto) {
         Category newCategory = service.save(categoryDto);
         return ResponseEntity.status(201).body(toDto(newCategory));
     }
 
     @PutMapping("/{id}")
+    @PreAuthorize("hasPermission(null, 'MANAGE_PRODUCTS')")
     public ResponseEntity<CategoryResponseDto> updateCategory(
             @PathVariable String id,
             @RequestBody CategoryRequestDto categoryDto) {
@@ -74,6 +80,7 @@ public class CategoryController {
     }
 
     @DeleteMapping("/{id}")
+    @PreAuthorize("hasPermission(null, 'MANAGE_PRODUCTS')")
     public ResponseEntity<Void> delete(@PathVariable String id) {
         service.delete(id);
         return ResponseEntity.noContent().build();

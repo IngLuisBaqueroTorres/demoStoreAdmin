@@ -1,5 +1,6 @@
 package com.ingeduardo.demostore.model;
 
+import com.ingeduardo.demostore.model.enums.PostStatus;
 import jakarta.persistence.*;
 import lombok.Data;
 

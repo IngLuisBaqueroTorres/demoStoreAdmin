@@ -1,5 +1,6 @@
 package com.ingeduardo.demostore.controller;
 
+import com.ingeduardo.demostore.dto.PermissionRequestDto;
 import com.ingeduardo.demostore.dto.PermissionResponseDto;
 import com.ingeduardo.demostore.service.PermissionService;
 import lombok.RequiredArgsConstructor;
@@ -18,32 +19,32 @@ public class PermissionController {
     private final PermissionService permissionService;
 
     @GetMapping
-    @PreAuthorize("hasAnyRole('ADMIN', 'SUPER_ADMIN')")
+    @PreAuthorize("hasPermission(null, 'VIEW_PERMISSIONS')")
     public ResponseEntity<List<PermissionResponseDto>> getAllPermissions() {
         return ResponseEntity.ok(permissionService.getAllPermissions());
     }
 
     @GetMapping("/{id}")
-    @PreAuthorize("hasAnyRole('ADMIN', 'SUPER_ADMIN')")
+    @PreAuthorize("hasPermission(null, 'VIEW_PERMISSIONS')")
     public ResponseEntity<PermissionResponseDto> getPermissionById(@PathVariable Long id) {
         return ResponseEntity.ok(permissionService.getPermissionById(id));
     }
 
     @PostMapping
-    @PreAuthorize("hasAnyRole('SUPER_ADMIN')") // Only SUPER_ADMIN can create permissions
+    @PreAuthorize("hasPermission(null, 'MANAGE_PERMISSIONS')")
     public ResponseEntity<PermissionResponseDto> createPermission(@RequestBody PermissionRequestDto requestDto) {
         PermissionResponseDto createdPermission = permissionService.createPermission(requestDto.getName(), requestDto.getDescription());
         return new ResponseEntity<>(createdPermission, HttpStatus.CREATED);
     }
 
     @PutMapping("/{id}")
-    @PreAuthorize("hasAnyRole('SUPER_ADMIN')") // Only SUPER_ADMIN can update permissions
+    @PreAuthorize("hasPermission(null, 'MANAGE_PERMISSIONS')")
     public ResponseEntity<PermissionResponseDto> updatePermission(@PathVariable Long id, @RequestBody PermissionRequestDto requestDto) {
         return ResponseEntity.ok(permissionService.updatePermission(id, requestDto.getName(), requestDto.getDescription()));
     }
 
     @DeleteMapping("/{id}")
-    @PreAuthorize("hasAnyRole('SUPER_ADMIN')") // Only SUPER_ADMIN can delete permissions
+    @PreAuthorize("hasPermission(null, 'MANAGE_PERMISSIONS')")
     public ResponseEntity<Void> deletePermission(@PathVariable Long id) {
         permissionService.deletePermission(id);
         return ResponseEntity.noContent().build();
