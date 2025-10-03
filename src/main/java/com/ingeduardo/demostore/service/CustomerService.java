@@ -19,8 +19,12 @@ public class CustomerService {
         return customerRepository.findAll();
     }
 
-    public Page<Customer> search(String name, String email, String phone, Pageable pageable) {
-        return customerRepository.search(name, email, phone, pageable);
+    public Page<Customer> search(String query, Pageable pageable) {
+        if (query != null && !query.trim().isEmpty()) {
+            // Asumo que el método 'searchByQuery' será creado en CustomerRepository.
+            return customerRepository.searchByQuery(query, pageable);
+        }
+        return customerRepository.findAll(pageable);
     }
 
     public Customer findById(String id) {

@@ -20,4 +20,14 @@ public interface CustomerRepository extends JpaRepository<Customer, String> {
                           @Param("email") String email,
                           @Param("phone") String phone,
                           Pageable pageable);
+
+    /**
+     * Busca clientes cuyo nombre, email o teléfono coincidan parcialmente con el query.
+     * La búsqueda no distingue entre mayúsculas y minúsculas.
+     */
+    @Query("SELECT c FROM Customer c WHERE " +
+           "LOWER(c.name) LIKE LOWER(CONCAT('%', :query, '%')) OR " +
+           "LOWER(c.email) LIKE LOWER(CONCAT('%', :query, '%')) OR " +
+           "LOWER(c.phone) LIKE LOWER(CONCAT('%', :query, '%'))")
+    Page<Customer> searchByQuery(@Param("query") String query, Pageable pageable);
 }

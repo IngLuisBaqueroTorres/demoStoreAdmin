@@ -61,7 +61,7 @@ public class DashboardService {
     private List<OrderResponseDto> getRecentOrders() {
         List<Order> recentOrders = orderRepository.findTop5ByOrderByOrderDateDesc();
         return recentOrders.stream()
-                .map(orderService::mapToOrderResponseDto)
+                .map(orderService::mapToOrderResponseDto) // This line will now work correctly
                 .collect(Collectors.toList());
     }
 

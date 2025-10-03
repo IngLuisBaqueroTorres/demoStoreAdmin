@@ -1,214 +1,115 @@
 package com.ingeduardo.demostore.service;
 
-import com.ingeduardo.demostore.dto.OrderItemRequestDto;
 import com.ingeduardo.demostore.dto.OrderItemResponseDto;
-import com.ingeduardo.demostore.dto.OrderRequestDto;
 import com.ingeduardo.demostore.dto.OrderResponseDto;
-import com.ingeduardo.demostore.exception.ResourceNotFoundException;
+import com.ingeduardo.demostore.dto.OrderUpdateRequest;
 import com.ingeduardo.demostore.model.*;
-import com.ingeduardo.demostore.model.enums.DiscountType;
-import com.ingeduardo.demostore.model.enums.OrderStatus;
-import com.ingeduardo.demostore.repository.*;
+import com.ingeduardo.demostore.repository.OrderRepository;
+import com.ingeduardo.demostore.repository.ProductRepository;
+import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import org.springframework.util.StringUtils;
 
 import java.math.BigDecimal;
-import java.time.LocalDate;
-import java.time.LocalDateTime;
-import java.util.ArrayList;
 import java.util.List;
-import java.util.stream.Collectors;
+import java.util.Optional;
 
 @Service
 @RequiredArgsConstructor
 public class OrderService {
 
     private final OrderRepository orderRepository;
-    private final OrderItemRepository orderItemRepository;
-    private final ProductRepository productRepository;
-    private final CustomerRepository customerRepository;
-    private final CouponRepository couponRepository;
-    private final ShippingMethodRepository shippingMethodRepository;
+    private final ProductRepository productRepository; // Asumimos que existe
+
+    public Page<Order> search(String query, Pageable pageable) {
+        return orderRepository.searchByQuery(query, pageable);
+    }
+
+    public Order findById(String id) {
+        return orderRepository.findById(id)
+                .orElseThrow(() -> new EntityNotFoundException("Order not found with ID: " + id));
+    }
 
     @Transactional
-    public OrderResponseDto createOrder(OrderRequestDto orderRequest) {
-        Customer customer = customerRepository.findById(orderRequest.getCustomerId())
-                .orElseThrow(() -> new ResourceNotFoundException("Customer not found with ID: " + orderRequest.getCustomerId()));
+    public Order update(String id, OrderUpdateRequest updateRequest) {
+        // 1. Buscar la orden existente
+        Order order = findById(id);
 
-        Order order = new Order();
-        order.setCustomer(customer);
-        order.setOrderDate(LocalDateTime.now());
-        order.setStatus(OrderStatus.PENDING);
-        order.setShippingAddress(orderRequest.getShippingAddress());
-        order.setBillingAddress(orderRequest.getBillingAddress());
+        // 2. Actualizar campos simples de la orden
+        order.setStatus(updateRequest.getStatus());
+        order.setShippingAddress(updateRequest.getShippingAddress());
 
-        List<OrderItem> orderItems = new ArrayList<>();
-        BigDecimal totalAmount = BigDecimal.ZERO;
+        // 3. Limpiar los items anteriores para reemplazarlos
+        // Esta es una estrategia simple. Otra más compleja podría ser
+        // comparar y actualizar, añadir o quitar items individualmente.
+        order.getOrderItems().clear();
 
-        for (OrderItemRequestDto itemDto : orderRequest.getItems()) {
-            Product product = productRepository.findById(itemDto.getProductId())
-                    .orElseThrow(() -> new ResourceNotFoundException("Product not found with ID: " + itemDto.getProductId()));
+        // 4. Crear y añadir los nuevos items
+        List<OrderItem> newItems = updateRequest.getItems().stream()
+                .map(itemDto -> {
+                    Product product = productRepository.findById(itemDto.getProductId())
+                            .orElseThrow(() -> new EntityNotFoundException("Product not found with ID: " + itemDto.getProductId()));
 
-            if (product.getStock() < itemDto.getQuantity()) {
-                throw new RuntimeException("Not enough stock for product: " + product.getName());
-            }
+                    OrderItem orderItem = new OrderItem();
+                    orderItem.setOrder(order);
+                    orderItem.setProduct(product);
+                    orderItem.setQuantity(itemDto.getQuantity());
+                    orderItem.setPriceAtPurchase(product.getPrice()); // Usar el precio actual del producto
+                    return orderItem;
+                })
+                .toList();
 
-            OrderItem orderItem = new OrderItem();
-            orderItem.setOrder(order);
-            orderItem.setProduct(product);
-            orderItem.setQuantity(itemDto.getQuantity());
-            orderItem.setPriceAtPurchase(product.getFinalPrice()); // Use final price with discount
+        order.getOrderItems().addAll(newItems);
 
-            orderItems.add(orderItem);
-            totalAmount = totalAmount.add(orderItem.getPriceAtPurchase().multiply(BigDecimal.valueOf(orderItem.getQuantity())));
-
-            // Reduce stock
-            product.setStock(product.getStock() - itemDto.getQuantity());
-            productRepository.save(product); // Save updated product stock
-        }
-
-        order.setOrderItems(orderItems);
+        // 5. Recalcular el total de la orden
+        BigDecimal totalAmount = newItems.stream()
+                .map(item -> item.getPriceAtPurchase().multiply(new BigDecimal(item.getQuantity())))
+                .reduce(BigDecimal.ZERO, BigDecimal::add);
         order.setTotalAmount(totalAmount);
 
-        // Handle coupon
-        if (StringUtils.hasText(orderRequest.getCouponCode())) {
-            applyCoupon(orderRequest.getCouponCode(), order);
-        }
-
-        // Handle Shipping
-        if (orderRequest.getShippingMethodId() != null) {
-            ShippingMethod shippingMethod = shippingMethodRepository.findById(orderRequest.getShippingMethodId())
-                    .orElseThrow(() -> new ResourceNotFoundException("ShippingMethod not found with ID: " + orderRequest.getShippingMethodId()));
-            order.setShippingMethod(shippingMethod);
-            order.setShippingCost(shippingMethod.getCost());
-        }
-
-        Order savedOrder = orderRepository.save(order);
-        orderItemRepository.saveAll(orderItems);
-
-        return mapToOrderResponseDto(savedOrder);
-    }
-
-    private void applyCoupon(String couponCode, Order order) {
-        Coupon coupon = couponRepository.findByCode(couponCode)
-                .orElseThrow(() -> new RuntimeException("Invalid coupon code: " + couponCode));
-
-        if (!coupon.getIsActive()) {
-            throw new RuntimeException("Coupon is not active.");
-        }
-
-        if (coupon.getExpiryDate() != null && coupon.getExpiryDate().isBefore(LocalDate.now())) {
-            throw new RuntimeException("Coupon has expired.");
-        }
-
-        if (coupon.getUsageLimit() != null && coupon.getTimesUsed() >= coupon.getUsageLimit()) {
-            throw new RuntimeException("Coupon has reached its usage limit.");
-        }
-
-        if (coupon.getMinPurchaseAmount() != null && order.getTotalAmount().compareTo(coupon.getMinPurchaseAmount()) < 0) {
-            throw new RuntimeException("Order amount does not meet the minimum purchase amount for this coupon.");
-        }
-
-        BigDecimal discountAmount = calculateDiscount(order.getTotalAmount(), coupon);
-        order.setDiscountAmount(discountAmount);
-        order.setCoupon(coupon);
-
-        coupon.setTimesUsed(coupon.getTimesUsed() + 1);
-        couponRepository.save(coupon);
-    }
-
-    private BigDecimal calculateDiscount(BigDecimal totalAmount, Coupon coupon) {
-        if (coupon.getDiscountType() == DiscountType.PERCENTAGE) {
-            BigDecimal discount = totalAmount.multiply(coupon.getDiscountValue().divide(new BigDecimal("100")));
-            return discount.setScale(2, java.math.RoundingMode.HALF_UP);
-        } else if (coupon.getDiscountType() == DiscountType.FIXED_AMOUNT) {
-            return coupon.getDiscountValue();
-        }
-        return BigDecimal.ZERO;
-    }
-
-    public OrderResponseDto getOrderById(String orderId) {
-        Order order = orderRepository.findById(orderId)
-                .orElseThrow(() -> new ResourceNotFoundException("Order not found with ID: " + orderId));
-        return mapToOrderResponseDto(order);
-    }
-
-    public List<OrderResponseDto> getOrdersByCustomer(String customerId) {
-        Customer customer = customerRepository.findById(customerId)
-                .orElseThrow(() -> new ResourceNotFoundException("Customer not found with ID: " + customerId));
-        List<Order> orders = orderRepository.findByCustomer(customer);
-        return orders.stream().map(this::mapToOrderResponseDto).collect(Collectors.toList());
-    }
-
-    // Admin method to get all orders
-    public List<OrderResponseDto> getAllOrders() {
-        List<Order> orders = orderRepository.findAll();
-        return orders.stream().map(this::mapToOrderResponseDto).collect(Collectors.toList());
-    }
-
-    // Admin method to update order status
-    @Transactional
-    public OrderResponseDto updateOrderStatus(String orderId, OrderStatus newStatus) {
-        Order order = orderRepository.findById(orderId)
-                .orElseThrow(() -> new ResourceNotFoundException("Order not found with ID: " + orderId));
-        order.setStatus(newStatus);
-        Order updatedOrder = orderRepository.save(order);
-        return mapToOrderResponseDto(updatedOrder);
-    }
-
-    @Transactional
-    public OrderResponseDto updateTrackingNumber(String orderId, String trackingNumber) {
-        Order order = orderRepository.findById(orderId)
-                .orElseThrow(() -> new ResourceNotFoundException("Order not found with ID: " + orderId));
-        order.setTrackingNumber(trackingNumber);
-        // Optionally, update status to SHIPPED when a tracking number is added
-        if (order.getStatus() == OrderStatus.PAID) { // Or some other appropriate status
-            order.setStatus(OrderStatus.SHIPPED);
-        }
-        Order updatedOrder = orderRepository.save(order);
-        return mapToOrderResponseDto(updatedOrder);
+        // 6. Guardar la orden actualizada
+        return orderRepository.save(order);
     }
 
     public OrderResponseDto mapToOrderResponseDto(Order order) {
-        List<OrderItemResponseDto> itemDtos = order.getOrderItems().stream()
-                .map(item -> {
-                    OrderItemResponseDto itemDto = new OrderItemResponseDto();
-                    itemDto.setProductId(item.getProduct().getId());
-                    itemDto.setProductName(item.getProduct().getName());
-                    itemDto.setQuantity(item.getQuantity());
-                    itemDto.setPriceAtPurchase(item.getPriceAtPurchase());
-                    return itemDto;
-                })
-                .collect(Collectors.toList());
+        if (order == null) {
+            return null;
+        }
 
         OrderResponseDto dto = new OrderResponseDto();
         dto.setId(order.getId());
-        dto.setCustomerId(order.getCustomer().getId());
-        dto.setCustomerName(order.getCustomer().getName());
         dto.setOrderDate(order.getOrderDate());
         dto.setTotalAmount(order.getTotalAmount());
         dto.setStatus(order.getStatus());
         dto.setShippingAddress(order.getShippingAddress());
         dto.setBillingAddress(order.getBillingAddress());
-        dto.setItems(itemDtos);
-
-        if (order.getCoupon() != null) {
-            dto.setCouponCode(order.getCoupon().getCode());
-            dto.setDiscountAmount(order.getDiscountAmount());
-        } else {
-            dto.setDiscountAmount(BigDecimal.ZERO);
-        }
-
-        if (order.getShippingMethod() != null) {
-            dto.setShippingMethodName(order.getShippingMethod().getName());
-            dto.setShippingCost(order.getShippingCost());
-        }
-
+        dto.setDiscountAmount(order.getDiscountAmount());
+        dto.setShippingCost(order.getShippingCost());
         dto.setTrackingNumber(order.getTrackingNumber());
         dto.setFinalAmount(order.getFinalAmount());
 
+        Optional.ofNullable(order.getCustomer()).ifPresent(c -> {
+            dto.setCustomerId(c.getId());
+            dto.setCustomerName(c.getName());
+        });
+
+        Optional.ofNullable(order.getCoupon()).ifPresent(c -> dto.setCouponCode(c.getCode()));
+        Optional.ofNullable(order.getShippingMethod()).ifPresent(sm -> dto.setShippingMethodName(sm.getName()));
+
+        dto.setItems(order.getOrderItems().stream().map(this::mapToOrderItemResponseDto).toList());
+
+        return dto;
+    }
+
+    private OrderItemResponseDto mapToOrderItemResponseDto(OrderItem item) {
+        OrderItemResponseDto dto = new OrderItemResponseDto();
+        dto.setProductId(item.getProduct().getId());
+        dto.setProductName(item.getProduct().getName());
+        dto.setQuantity(item.getQuantity());
+        dto.setPriceAtPurchase(item.getPriceAtPurchase());
         return dto;
     }
 }

@@ -4,9 +4,11 @@ import com.ingeduardo.demostore.dto.PermissionResponseDto;
 import com.ingeduardo.demostore.exception.ResourceNotFoundException;
 import com.ingeduardo.demostore.model.Permission;
 import com.ingeduardo.demostore.repository.PermissionRepository;
+import com.ingeduardo.demostore.repository.RoleRepository;
 import com.ingeduardo.demostore.service.PermissionService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 import java.util.stream.Collectors;
@@ -16,6 +18,7 @@ import java.util.stream.Collectors;
 public class PermissionServiceImpl implements PermissionService {
 
     private final PermissionRepository permissionRepository;
+    private final RoleRepository roleRepository;
 
     @Override
     public List<PermissionResponseDto> getAllPermissions() {
@@ -51,10 +54,20 @@ public class PermissionServiceImpl implements PermissionService {
     }
 
     @Override
+    @Transactional
     public void deletePermission(Long id) {
-        if (!permissionRepository.existsById(id)) {
-            throw new ResourceNotFoundException("Permission not found with id: " + id);
-        }
+        Permission permissionToDelete = permissionRepository.findById(id)
+                .orElseThrow(() -> new ResourceNotFoundException("Permission not found with id: " + id));
+
+        // Find all roles that have this permission
+        roleRepository.findAll().forEach(role -> {
+            if (role.getPermissions().contains(permissionToDelete)) {
+                role.getPermissions().remove(permissionToDelete);
+                roleRepository.save(role);
+            }
+        });
+
+        // Now it's safe to delete the permission
         permissionRepository.deleteById(id);
     }
 

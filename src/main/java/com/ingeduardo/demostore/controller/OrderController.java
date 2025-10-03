@@ -1,16 +1,18 @@
 package com.ingeduardo.demostore.controller;
 
-import com.ingeduardo.demostore.dto.OrderRequestDto;
+import com.ingeduardo.demostore.dto.OrderUpdateRequest;
 import com.ingeduardo.demostore.dto.OrderResponseDto;
-import com.ingeduardo.demostore.model.enums.OrderStatus;
+import com.ingeduardo.demostore.model.Order;
 import com.ingeduardo.demostore.service.OrderService;
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
-import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
-
-import java.util.List;
 
 @RestController
 @RequestMapping("/api/orders")
@@ -19,45 +21,35 @@ public class OrderController {
 
     private final OrderService orderService;
 
-    @PostMapping
-    @PreAuthorize("hasPermission(null, 'MANAGE_ORDERS')")
-    public ResponseEntity<OrderResponseDto> createOrder(@RequestBody OrderRequestDto orderRequest) {
-        OrderResponseDto createdOrder = orderService.createOrder(orderRequest);
-        return ResponseEntity.status(201).body(createdOrder);
+    @GetMapping
+    @PreAuthorize("hasPermission(null, 'VIEW_ORDERS')")
+    public ResponseEntity<Page<OrderResponseDto>> searchOrders(
+            @RequestParam(required = false) String query,
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "10") int size,
+            @RequestParam(defaultValue = "orderDate,desc") String sort) {
+
+        String[] sortParams = sort.split(",");
+        Sort.Direction direction = sortParams.length > 1 ? Sort.Direction.fromString(sortParams[1]) : Sort.Direction.DESC;
+        Sort sortOrder = Sort.by(direction, sortParams[0]);
+        Pageable pageable = PageRequest.of(page, size, sortOrder);
+        Page<Order> orders = orderService.search(query, pageable);
+        Page<OrderResponseDto> orderDtos = orders.map(orderService::mapToOrderResponseDto);
+        return ResponseEntity.ok(orderDtos);
     }
 
     @GetMapping("/{id}")
     @PreAuthorize("hasPermission(null, 'VIEW_ORDERS')")
     public ResponseEntity<OrderResponseDto> getOrderById(@PathVariable String id) {
-        OrderResponseDto order = orderService.getOrderById(id);
-        return ResponseEntity.ok(order);
+        return ResponseEntity.ok(orderService.mapToOrderResponseDto(orderService.findById(id)));
     }
 
-    @GetMapping("/by-customer/{customerId}")
-    @PreAuthorize("hasPermission(null, 'VIEW_ORDERS')")
-    public ResponseEntity<List<OrderResponseDto>> getOrdersByCustomer(@PathVariable String customerId) {
-        List<OrderResponseDto> orders = orderService.getOrdersByCustomer(customerId);
-        return ResponseEntity.ok(orders);
-    }
-
-    @GetMapping
-    @PreAuthorize("hasPermission(null, 'VIEW_ORDERS')")
-    public ResponseEntity<List<OrderResponseDto>> getAllOrders() {
-        List<OrderResponseDto> orders = orderService.getAllOrders();
-        return ResponseEntity.ok(orders);
-    }
-
-    @PutMapping("/{id}/status")
+    @PutMapping("/{id}")
     @PreAuthorize("hasPermission(null, 'MANAGE_ORDERS')")
-    public ResponseEntity<OrderResponseDto> updateOrderStatus(@PathVariable String id, @RequestParam OrderStatus status) {
-        OrderResponseDto updatedOrder = orderService.updateOrderStatus(id, status);
-        return ResponseEntity.ok(updatedOrder);
-    }
-
-    @PutMapping("/{id}/tracking")
-    @PreAuthorize("hasPermission(null, 'MANAGE_ORDERS')")
-    public ResponseEntity<OrderResponseDto> updateTrackingNumber(@PathVariable String id, @RequestBody com.ingeduardo.demostore.dto.UpdateTrackingNumberRequestDto request) {
-        OrderResponseDto updatedOrder = orderService.updateTrackingNumber(id, request.getTrackingNumber());
-        return ResponseEntity.ok(updatedOrder);
+    public ResponseEntity<OrderResponseDto> updateOrder(
+            @PathVariable String id,
+            @Valid @RequestBody OrderUpdateRequest updateRequest) {
+        Order updatedOrder = orderService.update(id, updateRequest);
+        return ResponseEntity.ok(orderService.mapToOrderResponseDto(updatedOrder));
     }
 }
