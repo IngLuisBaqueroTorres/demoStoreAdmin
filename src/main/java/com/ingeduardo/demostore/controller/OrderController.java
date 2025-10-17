@@ -1,6 +1,6 @@
 package com.ingeduardo.demostore.controller;
 
-import com.ingeduardo.demostore.dto.OrderUpdateRequest;
+import com.ingeduardo.demostore.dto.OrderUpdateRequestDto;
 import com.ingeduardo.demostore.dto.OrderResponseDto;
 import com.ingeduardo.demostore.model.Order;
 import com.ingeduardo.demostore.service.OrderService;
@@ -48,7 +48,7 @@ public class OrderController {
     @PreAuthorize("hasPermission(null, 'MANAGE_ORDERS')")
     public ResponseEntity<OrderResponseDto> updateOrder(
             @PathVariable String id,
-            @Valid @RequestBody OrderUpdateRequest updateRequest) {
+            @Valid @RequestBody OrderUpdateRequestDto updateRequest) {
         Order updatedOrder = orderService.update(id, updateRequest);
         return ResponseEntity.ok(orderService.mapToOrderResponseDto(updatedOrder));
     }

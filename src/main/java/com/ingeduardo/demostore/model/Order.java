@@ -54,6 +54,8 @@ public class Order {
     @OneToOne(mappedBy = "order", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
     private Payment payment;
 
+    private BigDecimal finalAmount;
+
     @PrePersist
     public void prePersist() {
         if (orderDate == null) {
@@ -62,13 +64,5 @@ public class Order {
         if (status == null) {
             status = OrderStatus.PENDING;
         }
-    }
-
-    public BigDecimal getFinalAmount() {
-        BigDecimal finalAmount = totalAmount != null ? totalAmount : BigDecimal.ZERO;
-        BigDecimal discount = discountAmount != null ? discountAmount : BigDecimal.ZERO;
-        BigDecimal shipping = shippingCost != null ? shippingCost : BigDecimal.ZERO;
-        
-        return finalAmount.subtract(discount).add(shipping);
     }
 }
