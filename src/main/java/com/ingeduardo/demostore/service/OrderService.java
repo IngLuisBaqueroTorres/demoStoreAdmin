@@ -22,10 +22,10 @@ import java.util.stream.Collectors;
 public class OrderService {
 
     private final OrderRepository orderRepository;
-    private final ShippingMethodRepository shippingMethodRepository; // Asumimos que existe
-    private final ProductRepository productRepository; // Asumimos que existe
-    private final CustomerRepository customerRepository; // Añadir para buscar clientes
-    private final CouponRepository couponRepository; // Añadir para buscar cupones
+    private final ShippingMethodRepository shippingMethodRepository;
+    private final ProductRepository productRepository;
+    private final CustomerRepository customerRepository;
+    private final CouponRepository couponRepository;
 
     public Page<Order> search(String query, Pageable pageable) {
         return orderRepository.searchByQuery(query, pageable);
@@ -57,17 +57,21 @@ public class OrderService {
         }
         if (updateRequest.getCustomerId() != null) {
             Customer customer = customerRepository.findById(updateRequest.getCustomerId())
-                    .orElseThrow(() -> new EntityNotFoundException("Customer not found with ID: " + updateRequest.getCustomerId()));
+                    .orElseThrow(() -> new EntityNotFoundException(
+                            "Customer not found with ID: " + updateRequest.getCustomerId()));
             order.setCustomer(customer);
         }
         // La lógica para shippingMethodId y couponCode es un poco más compleja
         // porque un valor nulo o vacío puede significar "quitar el método/cupón".
         if (updateRequest.getShippingMethodId() != null) {
             ShippingMethod shippingMethod = shippingMethodRepository.findById(updateRequest.getShippingMethodId())
-                    .orElseThrow(() -> new EntityNotFoundException("ShippingMethod not found with ID: " + updateRequest.getShippingMethodId()));
+                    .orElseThrow(() -> new EntityNotFoundException(
+                            "ShippingMethod not found with ID: " + updateRequest.getShippingMethodId()));
             order.setShippingMethod(shippingMethod);
-        } else if (updateRequest.getShippingMethodId() == null && updateRequest.getCouponCode() == null && updateRequest.getItems() == null) {
-            // Si no se envía nada que afecte los totales, no hacemos nada con el método de envío
+        } else if (updateRequest.getShippingMethodId() == null && updateRequest.getCouponCode() == null
+                && updateRequest.getItems() == null) {
+            // Si no se envía nada que afecte los totales, no hacemos nada con el método de
+            // envío
         } else {
             order.setShippingMethod(null); // Permite quitar el método de envío
         }
@@ -77,7 +81,9 @@ public class OrderService {
             if (updateRequest.getCouponCode().isEmpty()) {
                 order.setCoupon(null); // Quitar el cupón si se envía un string vacío
             } else {
-                Coupon coupon = couponRepository.findByCode(updateRequest.getCouponCode()).orElseThrow(() -> new EntityNotFoundException("Coupon not found with code: " + updateRequest.getCouponCode()));
+                Coupon coupon = couponRepository.findByCode(updateRequest.getCouponCode())
+                        .orElseThrow(() -> new EntityNotFoundException(
+                                "Coupon not found with code: " + updateRequest.getCouponCode()));
                 order.setCoupon(coupon); // Asignar el nuevo cupón
             }
         }
@@ -90,7 +96,8 @@ public class OrderService {
             List<OrderItem> newItems = updateRequest.getItems().stream()
                     .map(itemDto -> {
                         Product product = productRepository.findById(itemDto.getProductId())
-                                .orElseThrow(() -> new EntityNotFoundException("Product not found with ID: " + itemDto.getProductId()));
+                                .orElseThrow(() -> new EntityNotFoundException(
+                                        "Product not found with ID: " + itemDto.getProductId()));
 
                         OrderItem orderItem = new OrderItem();
                         orderItem.setOrder(order);

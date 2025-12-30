@@ -23,7 +23,7 @@ public class ProductAttributeValue {
     @Column(name = "attribute_id", nullable = false)
     private String attributeId;
 
-    @Column(name = "value", nullable = false)
+    @Column(name = "`value`", nullable = false)
     private String value;
 
     @ManyToOne

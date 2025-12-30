@@ -22,6 +22,8 @@ public class RoleInitializer implements CommandLineRunner {
 
     private final RoleRepository roleRepository;
     private final PermissionRepository permissionRepository;
+    private final com.ingeduardo.demostore.repository.UserRepository userRepository;
+    private final org.springframework.security.crypto.password.PasswordEncoder passwordEncoder;
 
     @Override
     public void run(String... args) throws Exception {
@@ -37,9 +39,12 @@ public class RoleInitializer implements CommandLineRunner {
         Permission viewRoles = createPermissionIfNotFound("VIEW_ROLES", "View all roles");
         Permission manageRoles = createPermissionIfNotFound("MANAGE_ROLES", "Create, update, delete roles");
         Permission viewPermissions = createPermissionIfNotFound("VIEW_PERMISSIONS", "View all permissions");
-        Permission managePermissions = createPermissionIfNotFound("MANAGE_PERMISSIONS", "Create, update, delete permissions");
-        Permission viewShippingMethods = createPermissionIfNotFound("VIEW_SHIPPING_METHODS", "View all shipping methods");
-        Permission manageShippingMethods = createPermissionIfNotFound("MANAGE_SHIPPING_METHODS", "Create, update, delete shipping methods");
+        Permission managePermissions = createPermissionIfNotFound("MANAGE_PERMISSIONS",
+                "Create, update, delete permissions");
+        Permission viewShippingMethods = createPermissionIfNotFound("VIEW_SHIPPING_METHODS",
+                "View all shipping methods");
+        Permission manageShippingMethods = createPermissionIfNotFound("MANAGE_SHIPPING_METHODS",
+                "Create, update, delete shipping methods");
         Permission viewPayments = createPermissionIfNotFound("VIEW_PAYMENTS", "View all payments");
         Permission managePayments = createPermissionIfNotFound("MANAGE_PAYMENTS", "Manage payment statuses");
 
@@ -53,13 +58,38 @@ public class RoleInitializer implements CommandLineRunner {
                 viewProducts, manageProducts,
                 viewUsers, viewSettings, manageSettings,
                 viewShippingMethods, manageShippingMethods,
-                viewPayments, managePayments
-        )));
+                viewPayments, managePayments)));
         createRoleIfNotFound(USER, new HashSet<>(Arrays.asList(
-                viewOrders, viewProducts
-        )));
+                viewOrders, viewProducts)));
 
-        System.out.println("🔧 Roles and Permissions initialized.");
+        // --- Default Users ---
+        createDefaultUsers();
+
+        System.out.println("🔧 Roles, Permissions, and Default Users initialized.");
+    }
+
+    private void createDefaultUsers() {
+        // Create SUPER_ADMIN
+        if (!userRepository.existsByEmail("admin@demo.com")) {
+            com.ingeduardo.demostore.model.User admin = new com.ingeduardo.demostore.model.User();
+            admin.setName("Admin User");
+            admin.setEmail("admin@demo.com");
+            admin.setPassword(passwordEncoder.encode("admin123"));
+            roleRepository.findByName(SUPER_ADMIN.name()).ifPresent(role -> admin.setRoles(Arrays.asList(role)));
+            userRepository.save(admin);
+            System.out.println("✅ Default admin user created: admin@demo.com / admin123");
+        }
+
+        // Create Regular User
+        if (!userRepository.existsByEmail("user@demo.com")) {
+            com.ingeduardo.demostore.model.User user = new com.ingeduardo.demostore.model.User();
+            user.setName("Demo User");
+            user.setEmail("user@demo.com");
+            user.setPassword(passwordEncoder.encode("user123"));
+            roleRepository.findByName(USER.name()).ifPresent(role -> user.setRoles(Arrays.asList(role)));
+            userRepository.save(user);
+            System.out.println("✅ Default user created: user@demo.com / user123");
+        }
     }
 
     private Permission createPermissionIfNotFound(String name, String description) {
@@ -91,4 +121,3 @@ public class RoleInitializer implements CommandLineRunner {
     }
 
 }
-

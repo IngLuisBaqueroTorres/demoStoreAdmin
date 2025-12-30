@@ -8,10 +8,15 @@ import org.slf4j.LoggerFactory;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
+import com.ingeduardo.demostore.dto.CategoryResponseDto;
+import org.springframework.data.domain.PageImpl;
+import java.util.stream.Collectors;
 import java.util.List;
 
 @Service
+@Transactional
 public class CategoryService {
 
     private final CategoryRepository repository;
@@ -21,12 +26,18 @@ public class CategoryService {
         this.repository = repository;
     }
 
-    public Page<Category> search(String name, String description, Pageable pageable) {
-        return repository.search(name, description, pageable);
+    public List<CategoryResponseDto> getTopLevelCategoriesAsDto() {
+        return repository.findByParentIsNull().stream()
+                .map(this::toDto)
+                .collect(Collectors.toList());
     }
 
-    public List<Category> findTopLevelCategories() {
-        return repository.findByParentIsNull();
+    public Page<CategoryResponseDto> searchAsDto(String name, String description, Pageable pageable) {
+        Page<Category> categoriesPage = repository.search(name, description, pageable);
+        List<CategoryResponseDto> dtoList = categoriesPage.getContent().stream()
+                .map(this::toDto)
+                .collect(Collectors.toList());
+        return new PageImpl<>(dtoList, pageable, categoriesPage.getTotalElements());
     }
 
     public Category findById(String id) {
@@ -42,7 +53,7 @@ public class CategoryService {
         category.setName(dto.getName());
         category.setDescription(dto.getDescription());
 
-        if (dto.getParentId() != null) {
+        if (dto.getParentId() != null && !dto.getParentId().isBlank()) {
             Category parent = repository.findById(dto.getParentId())
                     .orElseThrow(() -> new RuntimeException("Parent category not found."));
             category.setParent(parent);
@@ -63,7 +74,7 @@ public class CategoryService {
         existingCategory.setName(dto.getName());
         existingCategory.setDescription(dto.getDescription());
 
-        if (dto.getParentId() != null) {
+        if (dto.getParentId() != null && !dto.getParentId().isBlank()) {
             if (dto.getParentId().equals(existingCategory.getId())) {
                 throw new RuntimeException("A category cannot be its own parent.");
             }
@@ -82,5 +93,21 @@ public class CategoryService {
             throw new RuntimeException("Category not found.");
         }
         repository.deleteById(id);
+    }
+
+    public com.ingeduardo.demostore.dto.CategoryResponseDto toDto(Category category) {
+        if (category == null) {
+            return null;
+        }
+        com.ingeduardo.demostore.dto.CategoryResponseDto dto = new com.ingeduardo.demostore.dto.CategoryResponseDto();
+        dto.setId(category.getId());
+        dto.setName(category.getName());
+        dto.setDescription(category.getDescription());
+        if (category.getChildren() != null && !category.getChildren().isEmpty()) {
+            dto.setChildren(category.getChildren().stream()
+                    .map(this::toDto)
+                    .collect(java.util.stream.Collectors.toList()));
+        }
+        return dto;
     }
 }

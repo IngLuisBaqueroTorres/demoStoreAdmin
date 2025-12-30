@@ -16,6 +16,7 @@ import lombok.NoArgsConstructor;
 public class ProductResponseDto {
     private String id;
     private String name;
+    private String sku;
     private String description;
     private BigDecimal price;
     private BigDecimal discount;

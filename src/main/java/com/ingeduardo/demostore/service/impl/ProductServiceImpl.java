@@ -29,13 +29,13 @@ public class ProductServiceImpl implements ProductService {
     private final BrandRepository brandRepository;
     private static final String CATEGORY_NOT_FOUND = "Category not found with ID: ";
     private static final String BRAND_NOT_FOUND = "Brand not found with ID: ";
+    private static final String DEFAULT_BRAND_NAME = "Otros"; // default brand when not provided
 
     private static final Logger logger = LoggerFactory.getLogger(ProductServiceImpl.class);
 
-
     @Override
     public ProductResponseDto createProduct(ProductRequestDto dto) {
-      
+
         Product product = mapToEntity(dto);
         Product savedProduct = productRepository.save(product);
         return mapToResponseDto(savedProduct);
@@ -48,6 +48,9 @@ public class ProductServiceImpl implements ProductService {
                 .orElseThrow(() -> new ResourceNotFoundException("Product not found with id: " + id));
 
         product.setName(dto.getName());
+        if (dto.getSku() != null) {
+            product.setSku(dto.getSku());
+        }
         product.setDescription(dto.getDescription());
         product.setPrice(dto.getPrice());
         product.setDiscount(dto.getDiscount());
@@ -62,9 +65,13 @@ public class ProductServiceImpl implements ProductService {
         }
 
         if (dto.getBrandId() != null) {
-            Brand brand = brandRepository.findById(dto.getBrandId())
-                    .orElseThrow(() -> new RuntimeException(BRAND_NOT_FOUND + dto.getBrandId()));
-            product.setBrand(brand);
+            if (dto.getBrandId().trim().isEmpty()) {
+                product.setBrand(getOrCreateDefaultBrand());
+            } else {
+                Brand brand = brandRepository.findById(dto.getBrandId())
+                        .orElseThrow(() -> new RuntimeException(BRAND_NOT_FOUND + dto.getBrandId()));
+                product.setBrand(brand);
+            }
         }
 
         Product updatedProduct = productRepository.save(product);
@@ -105,6 +112,12 @@ public class ProductServiceImpl implements ProductService {
     private Product mapToEntity(ProductRequestDto dto) {
         Product product = new Product();
         product.setName(dto.getName());
+        // If SKU provided use it, otherwise generate one
+        if (dto.getSku() != null && !dto.getSku().trim().isEmpty()) {
+            product.setSku(dto.getSku());
+        } else {
+            product.setSku(generateSku(dto.getName()));
+        }
         product.setDescription(dto.getDescription());
         product.setPrice(dto.getPrice());
         product.setStock(dto.getStock());
@@ -119,10 +132,13 @@ public class ProductServiceImpl implements ProductService {
             product.setCategory(category);
         }
 
-        if (dto.getBrandId() != null) {
+        // If brandId provided and not blank use it; otherwise assign default brand
+        if (dto.getBrandId() != null && !dto.getBrandId().trim().isEmpty()) {
             Brand brand = brandRepository.findById(dto.getBrandId())
                     .orElseThrow(() -> new RuntimeException(BRAND_NOT_FOUND + dto.getBrandId()));
             product.setBrand(brand);
+        } else {
+            product.setBrand(getOrCreateDefaultBrand());
         }
 
         return product;
@@ -132,14 +148,15 @@ public class ProductServiceImpl implements ProductService {
         return ProductResponseDto.builder()
                 .id(product.getId())
                 .name(product.getName())
+                .sku(product.getSku() != null ? product.getSku() : "")
                 .description(product.getDescription())
                 .price(product.getPrice())
                 .discount(product.getDiscount())
                 .finalPrice(product.getFinalPrice())
-                .stock(product.getStock())
+                .stock(product.getStock() != null ? product.getStock() : 0)
                 .category(product.getCategory())
-                .active(product.getIsActive())
-                .soldOut(product.getIsSoldOut())
+                .active(Boolean.TRUE.equals(product.getIsActive()))
+                .soldOut(Boolean.TRUE.equals(product.getIsSoldOut()))
                 .brand(product.getBrand())
                 .images(product.getImages())
                 .attributes(
@@ -148,9 +165,26 @@ public class ProductServiceImpl implements ProductService {
                                         .attributeId(attrValue.getAttributeId())
                                         .value(attrValue.getValue())
                                         .build())
-                                        .toList()
+                                .toList()
                                 : new ArrayList<>())
                 .build();
+    }
+
+    private String generateSku(String name) {
+        String base = (name == null || name.trim().isEmpty()) ? "SKU" : name.replaceAll("[^A-Za-z0-9]+", "-").toUpperCase();
+        if (base.length() > 20) base = base.substring(0, 20);
+        String suffix = java.util.UUID.randomUUID().toString().substring(0, 8).toUpperCase();
+        return base + "-" + suffix;
+    }
+
+    private Brand getOrCreateDefaultBrand() {
+        return brandRepository.findByNameIgnoreCase(DEFAULT_BRAND_NAME)
+                .orElseGet(() -> {
+                    Brand b = new Brand();
+                    b.setName(DEFAULT_BRAND_NAME);
+                    b.setDescription("Default brand for uncategorized products");
+                    return brandRepository.save(b);
+                });
     }
 
 }

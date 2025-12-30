@@ -15,6 +15,9 @@ public class AuthController {
     @Autowired
     private AuthService authService;
 
+    @Autowired
+    private com.ingeduardo.demostore.service.GoogleAuthService googleAuthService;
+
     @PostMapping("/register")
     public ResponseEntity<AuthResponse> register(@RequestBody RegisterRequest request) {
         AuthResponse response = authService.register(request);
@@ -24,6 +27,14 @@ public class AuthController {
     @PostMapping("/login")
     public ResponseEntity<AuthResponse> login(@RequestBody LoginRequest request) {
         AuthResponse response = authService.login(request);
+        return ResponseEntity.ok(response);
+    }
+
+    @PostMapping("/google")
+    public ResponseEntity<AuthResponse> googleLogin(
+            @RequestBody com.ingeduardo.demostore.dto.GoogleLoginRequest request)
+            throws java.security.GeneralSecurityException, java.io.IOException {
+        AuthResponse response = googleAuthService.loginWithGoogle(request.getToken());
         return ResponseEntity.ok(response);
     }
 }

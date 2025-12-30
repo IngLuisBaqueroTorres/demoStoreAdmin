@@ -26,7 +26,8 @@ public class ProductController {
 
     @PostMapping
     @PreAuthorize("hasPermission(null, 'MANAGE_PRODUCTS')")
-    public ResponseEntity<ProductResponseDto> create(@RequestBody ProductRequestDto productDTO) {
+    public ResponseEntity<ProductResponseDto> create(
+            @jakarta.validation.Valid @RequestBody ProductRequestDto productDTO) {
         ProductResponseDto created = productService.createProduct(productDTO);
         return ResponseEntity.status(201).body(created);
     }
@@ -50,7 +51,8 @@ public class ProductController {
 
     @PutMapping("/{id}")
     @PreAuthorize("hasPermission(null, 'MANAGE_PRODUCTS')")
-    public ResponseEntity<ProductResponseDto> update(@PathVariable String id, @RequestBody ProductRequestDto productDTO) {
+    public ResponseEntity<ProductResponseDto> update(@PathVariable String id,
+            @jakarta.validation.Valid @RequestBody ProductRequestDto productDTO) {
         ProductResponseDto updated = productService.updateProduct(id, productDTO);
         return ResponseEntity.ok(updated);
     }

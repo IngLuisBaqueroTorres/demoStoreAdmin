@@ -21,7 +21,6 @@ public class CustomerService {
 
     public Page<Customer> search(String query, Pageable pageable) {
         if (query != null && !query.trim().isEmpty()) {
-            // Asumo que el método 'searchByQuery' será creado en CustomerRepository.
             return customerRepository.searchByQuery(query, pageable);
         }
         return customerRepository.findAll(pageable);

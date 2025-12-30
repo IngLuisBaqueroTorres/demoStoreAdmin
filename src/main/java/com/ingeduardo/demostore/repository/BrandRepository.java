@@ -11,6 +11,7 @@ import org.springframework.stereotype.Repository;
 @Repository
 public interface BrandRepository extends JpaRepository<Brand, String> {
     boolean existsByName(String name);
+    java.util.Optional<Brand> findByNameIgnoreCase(String name);
 
     @Query("SELECT b FROM Brand b " +
            "WHERE (:name IS NULL OR LOWER(b.name) LIKE LOWER(CONCAT('%', :name, '%'))) " +

@@ -4,7 +4,11 @@ import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.SignatureAlgorithm;
 import io.jsonwebtoken.security.Keys;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import java.nio.charset.StandardCharsets;
 
 import com.ingeduardo.demostore.model.Role;
 import com.ingeduardo.demostore.model.User;
@@ -21,7 +25,19 @@ import java.util.stream.Collectors;
 public class JwtService {
 
     private static final long EXPIRATION = 1000 * 60 * 60 * 10; // 10 horas
-    private final Key key = Keys.secretKeyFor(SignatureAlgorithm.HS256);
+    private static final Logger logger = LoggerFactory.getLogger(JwtService.class);
+
+    private final Key key;
+
+    public JwtService(@Value("${app.jwt.secret:}") String secret) {
+        if (secret == null || secret.isBlank()) {
+            logger.warn("No JWT secret configured (app.jwt.secret); generating ephemeral key. Tokens won't survive restarts.");
+            this.key = Keys.secretKeyFor(SignatureAlgorithm.HS256);
+        } else {
+            byte[] keyBytes = secret.getBytes(StandardCharsets.UTF_8);
+            this.key = Keys.hmacShaKeyFor(keyBytes);
+        }
+    }
 
   public String generateToken(User user) {
     Map<String, Object> claims = new HashMap<>();

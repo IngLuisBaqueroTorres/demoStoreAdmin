@@ -15,7 +15,7 @@ import org.springframework.web.bind.annotation.*;
 @RequestMapping("/api/customers")
 @RequiredArgsConstructor
 public class CustomerController {
-    
+
     private final CustomerService customerService;
 
     @GetMapping
@@ -29,7 +29,6 @@ public class CustomerController {
         String[] sortParams = sort.split(",");
         Sort sortOrder = Sort.by(Sort.Direction.fromString(sortParams[1]), sortParams[0]);
         Pageable pageable = PageRequest.of(page, size, sortOrder);
-        // Asumo que el método 'search' en CustomerService será actualizado para manejar un único 'query'.
         Page<Customer> customers = customerService.search(query, pageable);
         return ResponseEntity.ok(customers);
     }

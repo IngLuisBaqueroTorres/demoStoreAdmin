@@ -2,6 +2,10 @@ spring:
   application:
     name: demostore
 
+app:
+  cors:
+    allowed-origins: http://localhost:3000,http://localhost:5173
+
   datasource:
     url: jdbc:mysql://localhost:3306/store_db?useUnicode=true&characterEncoding=utf8
     username: root
@@ -28,3 +32,7 @@ logging:
     org.springframework.web: DEBUG
     org.hibernate.SQL: DEBUG
     org.hibernate.type.descriptor.sql.BasicBinder: TRACE
+# Google Auth
+google:
+  client:
+    id: ${GOOGLE_CLIENT_ID:YOUR_GOOGLE_CLIENT_ID.apps.googleusercontent.com}

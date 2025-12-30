@@ -27,6 +27,7 @@ public class Product {
     private String id;
 
     private String name;
+    private String sku;
     private String description;
     private BigDecimal price;
     private BigDecimal discount = BigDecimal.ZERO;

@@ -1,18 +1,16 @@
 package com.ingeduardo.demostore.dto;
 
+import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
+import lombok.NoArgsConstructor;
 
 @Data
 @Builder
+@NoArgsConstructor
+@AllArgsConstructor
 public class ProductAttributeResponseDto {
-    private String name;
-    private String value;
-    private String attributeId;
-
-     public ProductAttributeResponseDto(String attributeId, String value, String name) {
-        this.attributeId = attributeId;
-        this.value = value;
-        this.attributeId = attributeId;
-     }
+   private String name;
+   private String value;
+   private String attributeId;
 }

@@ -17,7 +17,7 @@ public class CategoryAttributeValue {
     @Column(name = "id", length = 36)
     private String id;
 
-    @Column(nullable = false)
+    @Column(name = "`value`", nullable = false)
     private String value;
 
     @ManyToOne(fetch = FetchType.LAZY)
@@ -26,6 +26,7 @@ public class CategoryAttributeValue {
 
     @PrePersist
     public void ensureId() {
-        if (this.id == null) this.id = UUID.randomUUID().toString();
+        if (this.id == null)
+            this.id = UUID.randomUUID().toString();
     }
 }
